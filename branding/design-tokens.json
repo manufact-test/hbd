@@ -1,0 +1,59 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "brand": {
+    "name": "BdaySquirrel",
+    "visualStyle": "Pixel Carved Retrowave",
+    "version": "1.0"
+  },
+  "color": {
+    "foundation": {
+      "nightPlum": { "$value": "#171226", "$type": "color" },
+      "deepIndigo": { "$value": "#241A3A", "$type": "color" },
+      "cardViolet": { "$value": "#2D2144", "$type": "color" },
+      "raisedViolet": { "$value": "#392A55", "$type": "color" },
+      "darkOutline": { "$value": "#100B1C", "$type": "color" }
+    },
+    "brand": {
+      "squirrelCoral": { "$value": "#FF7A3D", "$type": "color" },
+      "peach": { "$value": "#FFB36B", "$type": "color" },
+      "acornBrown": { "$value": "#A85B38", "$type": "color" },
+      "candleCream": { "$value": "#FFE49A", "$type": "color" }
+    },
+    "accent": {
+      "mint": { "$value": "#6FE7C8", "$type": "color" },
+      "lavender": { "$value": "#A98BFF", "$type": "color" },
+      "skyPixel": { "$value": "#6EC8FF", "$type": "color" },
+      "danger": { "$value": "#FF5A6E", "$type": "color" }
+    },
+    "text": {
+      "cream": { "$value": "#FFF4D8", "$type": "color" },
+      "softCream": { "$value": "#E8DEC7", "$type": "color" },
+      "muted": { "$value": "#B8B1CA", "$type": "color" },
+      "disabled": { "$value": "#777086", "$type": "color" },
+      "dark": { "$value": "#21162B", "$type": "color" }
+    }
+  },
+  "spacing": {
+    "base": { "$value": "4dp", "$type": "dimension" },
+    "xs": { "$value": "4dp", "$type": "dimension" },
+    "sm": { "$value": "8dp", "$type": "dimension" },
+    "md": { "$value": "12dp", "$type": "dimension" },
+    "lg": { "$value": "16dp", "$type": "dimension" },
+    "xl": { "$value": "20dp", "$type": "dimension" },
+    "2xl": { "$value": "24dp", "$type": "dimension" },
+    "3xl": { "$value": "32dp", "$type": "dimension" },
+    "4xl": { "$value": "40dp", "$type": "dimension" },
+    "5xl": { "$value": "48dp", "$type": "dimension" }
+  },
+  "motion": {
+    "press": { "$value": "120ms", "$type": "duration" },
+    "state": { "$value": "220ms", "$type": "duration" },
+    "entrance": { "$value": "280ms", "$type": "duration" },
+    "mascot": { "$value": "700ms", "$type": "duration" },
+    "celebrationMax": { "$value": "1500ms", "$type": "duration" }
+  },
+  "typography": {
+    "displayFamily": { "$value": "Unbounded", "$type": "fontFamily" },
+    "interfaceFamily": { "$value": "Manrope", "$type": "fontFamily" }
+  }
+}
