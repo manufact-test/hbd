@@ -1,7 +1,7 @@
 # BdaySquirrel Brand System
 
 **Status:** Approved visual direction, version 1.0  
-**Visual style name:** Pixel Carved Retrowave  
+**Visual style:** Pixel Carved Retrowave  
 **Primary platform:** Android  
 **Brand personality:** friendly, warm, memorable, reliable, playful without feeling childish
 
@@ -9,27 +9,19 @@
 
 ## 1. Brand idea
 
-BdaySquirrel is a birthday reminder app that helps people store important dates and remember to congratulate the people they care about.
+BdaySquirrel is a private, local-first birthday reminder app that helps people store important dates and remember to congratulate the people they care about.
 
-The core brand metaphor is simple:
+The central metaphor is simple:
 
 > A squirrel carefully collects and stores important birthdays the same way a real squirrel collects and stores acorns.
 
-This idea connects the product function, mascot and visual language into one recognizable system. The squirrel represents memory, care and preparation. The acorn represents a saved birthday. A candle placed in the acorn makes the birthday purpose immediately understandable.
+The squirrel represents memory, care and preparation. The acorn represents a saved birthday. A candle placed in the acorn makes the birthday purpose immediately understandable.
 
-BdaySquirrel should feel:
-
-- distinctive and easy to recognize;
-- friendly, but not designed only for children;
-- warm and emotionally positive;
-- slightly nostalgic;
-- dependable and calm;
-- modern despite its pixel-art influence;
-- private and personal rather than corporate.
+BdaySquirrel should feel distinctive, friendly, warm, slightly nostalgic, dependable and modern despite its pixel-art influence.
 
 ## 2. Visual direction: Pixel Carved Retrowave
 
-Pixel Carved Retrowave is the proprietary visual direction of BdaySquirrel. It combines:
+Pixel Carved Retrowave combines:
 
 - crisp pixel art;
 - the atmosphere of 1980s arcade interfaces;
@@ -38,9 +30,9 @@ Pixel Carved Retrowave is the proprietary visual direction of BdaySquirrel. It c
 - a clean contemporary mobile UI;
 - short game-like interactions used only where they improve feedback.
 
-The interface should look as if its components were cut from the panels of a friendly old arcade machine. It should not look like generic neon cyberpunk, a full retro game, or a children’s cartoon.
+The product should look as if its components were cut from the panels of a friendly old arcade machine. It must not look like generic neon cyberpunk, a complete retro game or a children’s cartoon.
 
-### Defining visual traits
+### Defining traits
 
 - stepped or diagonally cut corners instead of generic rounded rectangles;
 - 2 dp pixel-like borders;
@@ -55,34 +47,29 @@ The interface should look as if its components were cut from the panels of a fri
 
 ## 3. Design principles
 
-### 3.1 Friendly, not childish
+### Friendly, not childish
 
 Warmth comes from the coral squirrel, cream typography, gentle microcopy and restrained mascot expressions. Avoid oversized cartoon eyes, exaggerated baby proportions and excessive decoration.
 
-### 3.2 Carved geometry
+### Carved geometry
 
-Standard pill-shaped UI should not define the product. Cards, buttons and panels should use small stepped cuts, diagonal corners or pixel notches. Shapes must remain simple enough to scan quickly.
+Cards, buttons and panels use small stepped cuts, diagonal corners or pixel notches. Shapes remain simple enough to scan quickly.
 
-### 3.3 Clean before decorative
+### Clean before decorative
 
-Pixel styling must never reduce usability. A normal product screen should use no more than one large decorative illustration and a few small pixel details. Functional information always comes first.
+Pixel styling must never reduce usability. Functional information always comes first.
 
-### 3.4 Dark by default
+### Dark by default
 
-The primary product theme is dark. The plum background strengthens the Retrowave character, makes the coral mascot stand out and creates a calm evening-friendly atmosphere.
+The primary theme is dark. The plum background strengthens the Retrowave character, makes the coral mascot stand out and creates a calm evening-friendly atmosphere.
 
-### 3.5 Decoration must communicate
+### Decoration must communicate
 
-- color communicates status;
-- badges communicate urgency;
-- animation confirms an action;
-- the mascot explains empty or exceptional states;
-- borders distinguish interactive elements;
-- celebration effects appear only when there is something to celebrate.
+Color communicates status, badges communicate urgency, animation confirms actions, the mascot explains empty states and borders distinguish interactive elements.
 
 ## 4. Color system
 
-### 4.1 Foundation colors
+### Foundation colors
 
 | Token | HEX | Primary use |
 |---|---|---|
@@ -92,7 +79,7 @@ The primary product theme is dark. The plum background strengthens the Retrowave
 | Raised Violet | `#392A55` | Raised, selected or emphasized surfaces |
 | Dark Outline | `#100B1C` | Borders, mascot outline and hard shadows |
 
-### 4.2 Brand colors
+### Brand colors
 
 | Token | HEX | Primary use |
 |---|---|---|
@@ -101,7 +88,7 @@ The primary product theme is dark. The plum background strengthens the Retrowave
 | Acorn Brown | `#A85B38` | Acorns and earthy illustration details |
 | Candle Cream | `#FFE49A` | Candle, flame highlights and celebration details |
 
-### 4.3 Supporting accents
+### Supporting accents
 
 | Token | HEX | Primary use |
 |---|---|---|
@@ -110,7 +97,7 @@ The primary product theme is dark. The plum background strengthens the Retrowave
 | Sky Pixel | `#6EC8FF` | Occasional information states |
 | Danger | `#FF5A6E` | Errors, deletion and destructive actions |
 
-### 4.4 Text colors
+### Text colors
 
 | Token | HEX | Primary use |
 |---|---|---|
@@ -120,9 +107,7 @@ The primary product theme is dark. The plum background strengthens the Retrowave
 | Disabled Text | `#777086` | Disabled controls and low-emphasis metadata |
 | Dark Text | `#21162B` | Text displayed on light or coral surfaces |
 
-### 4.5 Recommended color distribution
-
-On a typical screen:
+### Recommended distribution
 
 - 65–70% Night Plum;
 - 15–20% Deep Indigo and Card Violet;
@@ -130,9 +115,7 @@ On a typical screen:
 - 5–7% Squirrel Coral;
 - no more than 3% Mint, Lavender and other accents combined.
 
-Coral is the primary accent, so it should remain scarce enough to guide attention.
-
-### 4.6 Brand gradient
+### Brand gradient
 
 Gradients are exceptional rather than foundational.
 
@@ -145,53 +128,29 @@ linear-gradient(
 )
 ```
 
-Allowed uses:
-
-- onboarding or splash artwork;
-- the Pro page;
-- a major celebration illustration;
-- a single promotional card;
-- rare highlighted badges.
-
-Do not use it across standard cards, form fields, navigation or multiple buttons on the same screen.
+Allowed only for onboarding artwork, the Pro page, major celebration illustrations or a single promotional card.
 
 ## 5. Typography
 
-### 5.1 Display and short headings
+### Display and short headings
 
 **Typeface:** Unbounded  
 **Recommended weights:** 500, 600 and occasional 700
 
-Use for:
+Use for screen titles, large dates, countdowns, onboarding headlines and short celebration messages.
 
-- screen titles;
-- large dates;
-- day countdowns;
-- short celebration messages;
-- onboarding headlines;
-- Pro presentation.
-
-Do not use Unbounded for paragraphs or dense settings screens.
-
-### 5.2 Interface typography
+### Interface typography
 
 **Typeface:** Manrope  
 **Recommended weights:** 400, 500, 600 and occasional 700
 
-Use for:
+Use for names, dates, body copy, settings, buttons, form fields, hints and system messages.
 
-- names and dates;
-- body copy;
-- settings;
-- buttons;
-- form fields;
-- hints and system messages.
+### Wordmark
 
-### 5.3 Wordmark
+The BdaySquirrel wordmark uses custom pixel lettering with stepped corners, large counters and strong readability. It must not be replaced by an arbitrary downloadable arcade font.
 
-The BdaySquirrel wordmark uses custom pixel lettering. It should preserve stepped corners, large counters and strong readability. It must not resemble an arbitrary downloadable arcade font.
-
-### 5.4 Type scale
+### Type scale
 
 | Style | Size | Typeface and weight |
 |---|---:|---|
@@ -204,72 +163,45 @@ The BdaySquirrel wordmark uses custom pixel lettering. It should preserve steppe
 | Label | 13–14 sp | Manrope 600 |
 | Caption | 11–12 sp | Manrope 500 |
 
-Pixel aesthetics must never be used as a reason to make interface text too small.
-
 ## 6. Grid, spacing and sizing
 
 The base spacing unit is **4 dp**.
 
-Recommended spacing values:
+Recommended values: `4, 8, 12, 16, 20, 24, 32, 40, 48 dp`.
 
-`4, 8, 12, 16, 20, 24, 32, 40, 48 dp`
-
-Screen side padding:
-
-- 20 dp on standard phones;
-- 24 dp on large devices.
-
-Touch targets:
-
-- minimum interactive area: 48 dp;
+- Standard phone side padding: 20 dp;
+- large-device side padding: 24 dp;
+- minimum touch area: 48 dp;
 - standard primary button height: 52–56 dp;
 - prominent primary action: 56 dp.
 
 ## 7. Geometry and components
 
-### 7.1 Cards
+### Cards
 
-Standard card treatment:
-
-- background: Card Violet;
-- 2 dp border using Raised Violet or Dark Outline;
+- Card Violet background;
+- 2 dp Raised Violet or Dark Outline border;
 - small stepped or diagonal corner cuts;
 - 4 dp hard shadow;
 - 16–20 dp internal padding.
 
-Avoid complex silhouettes. A card must still read as a stable rectangular information block.
+### Primary buttons
 
-### 7.2 Primary buttons
-
-- background: Squirrel Coral;
-- text: Dark Text;
+- Squirrel Coral background;
+- Dark Text label;
 - 2 dp Dark Outline border;
 - 4 dp hard shadow;
-- 56 dp height for the main action;
 - stepped or subtly octagonal shape.
 
-Pressed state:
+Pressed state moves down by 2–4 dp while reducing the lower shadow, creating the feeling of pressing an arcade key.
 
-- move the button down by 2–4 dp;
-- reduce or remove the lower shadow;
-- create the physical feeling of pressing an arcade key.
+### Secondary buttons
 
-### 7.3 Secondary buttons
+Use a transparent or Card Violet background, Mint or Lavender border and Cream text.
 
-- transparent or Card Violet background;
-- Mint or Lavender border;
-- Cream text;
-- same carved geometry as the primary button, but lower visual weight.
+### Input fields
 
-### 7.4 Input fields
-
-- Card Violet background;
-- 2 dp border;
-- minimum height of 52 dp;
-- no default rounded Material pill shape;
-- Mint or Coral active border;
-- Danger error border;
-- placeholder color no dimmer than Muted Text.
+Use Card Violet, a 2 dp border, a minimum height of 52 dp, Mint or Coral focus border and Danger error border. Avoid default Material pill shapes.
 
 ## 8. Iconography
 
@@ -277,49 +209,26 @@ Icons follow a consistent pixel system:
 
 - 24 × 24 px construction grid;
 - 2 px line or block thickness;
-- square line endings;
-- no fuzzy anti-aliased edges in exported pixel assets;
+- square endings;
 - minimal internal details;
 - clear silhouettes at small sizes;
 - consistent visual density.
 
-Recommended colors:
-
-- Cream for default active icons;
-- Muted Text for inactive icons;
-- Coral, Mint or Lavender for selected and status states.
-
-Not every utility icon needs to be decorative. Clarity is more important than novelty.
+Use Cream for default active icons, Muted Text for inactive icons and Coral, Mint or Lavender for selected states.
 
 ## 9. Logo and mascot
 
-### 9.1 Primary concept
+### Primary concept
 
 The primary symbol is a pixel-art squirrel shown in profile. Its large curled tail suggests the letter **S**. The squirrel holds an acorn with a small birthday candle.
 
-This single mark communicates:
+The mark communicates the squirrel mascot, the initial S, stored important dates, birthdays, care and preparation.
 
-- the squirrel mascot;
-- the initial S;
-- stored important dates;
-- birthdays;
-- care and preparation.
+### Mascot personality
 
-### 9.2 Mascot personality
+The squirrel is curious, warm, clever, energetic, organized and slightly playful, but never overly childish.
 
-The squirrel is:
-
-- curious;
-- warm;
-- clever;
-- energetic;
-- organized;
-- slightly playful;
-- never overly childish.
-
-Core expressions may include calm happiness, excitement, surprise, thoughtfulness, sleepiness and celebration.
-
-### 9.3 Mascot colors
+### Mascot colors
 
 - body: Squirrel Coral;
 - highlights: Peach;
@@ -328,11 +237,16 @@ Core expressions may include calm happiness, excitement, surprise, thoughtfulnes
 - candle and flame: Candle Cream;
 - rare highlight: Cream or Mint.
 
-### 9.4 Required future logo variants
+### Approved SVG assets
 
-- primary horizontal logo;
+- `assets/logo/bdaysquirrel-primary-logo.svg` — primary horizontal logo;
+- `assets/logo/bdaysquirrel-squirrel-icon.svg` — standalone squirrel mascot icon.
+
+**SVG is the only maintained logo format in this repository.** Do not commit raster logo exports.
+
+### Future SVG variants
+
 - stacked logo;
-- symbol without wordmark;
 - Android launcher icon;
 - compact notification mark;
 - light monochrome mark;
@@ -340,118 +254,45 @@ Core expressions may include calm happiness, excitement, surprise, thoughtfulnes
 - favicon;
 - splash-screen version.
 
-### 9.5 Current approved concept
-
-The current primary concept is stored in:
-
-- `assets/logo/bdaysquirrel-primary-logo.svg` — editable vector pixel reconstruction;
-- `assets/logo/bdaysquirrel-primary-logo.png` — transparent raster export of the approved concept.
-
-The concept is approved as the starting visual direction. Exact geometry may be refined later when constructing the final production icon family and small-size variants.
-
 ## 10. App icon direction
 
-The launcher icon should remain recognizable at small sizes.
-
-Recommended composition:
-
-- Night Plum background;
-- large squirrel silhouette;
-- S-shaped tail;
-- acorn with birthday candle;
-- restrained Cream or Lavender highlight.
-
-Do not place the full brand name, fine text, tiny confetti, a complex background or thin outlines inside the launcher icon.
+The launcher icon should use a Night Plum background, a large squirrel silhouette, an S-shaped tail and the acorn with birthday candle. Do not place the full brand name, fine text, tiny confetti or thin outlines inside the launcher icon.
 
 ## 11. Illustration system
 
-Illustrations use an integer pixel grid and a limited palette.
+Illustrations use an integer pixel grid and a limited palette. Recurring objects include the squirrel, acorns, candles, cakes, gifts, envelopes, stars, balloons and calendar sheets.
 
-Recurring objects:
-
-- the squirrel mascot;
-- acorns;
-- candles and cakes;
-- gifts and envelopes;
-- pixel stars;
-- balloons;
-- calendar sheets;
-- small planets and retro sparkles.
-
-A small illustration should usually stay within 5–7 colors. All illustration assets must feel as if they belong to the same game world.
+A small illustration should usually stay within 5–7 colors. All artwork must feel as if it belongs to the same game world.
 
 ## 12. Background decoration
 
-Backgrounds remain calm. Optional patterns include:
-
-- sparse square stars;
-- pixel dust;
-- checker dithering;
-- a thin grid;
-- subtle horizontal Retrowave lines;
-- tiny acorn motifs.
+Optional patterns include sparse square stars, pixel dust, checker dithering, a thin grid, subtle horizontal Retrowave lines and tiny acorn motifs.
 
 Recommended opacity: **3–8%**.
 
-Decoration must never interfere with text contrast.
-
 ## 13. Birthday card states
-
-A person card may contain:
-
-- avatar;
-- name;
-- birth date;
-- days remaining;
-- age when known;
-- a status badge;
-- a quick action.
 
 ### Today
 
-- Coral border;
-- `TODAY` badge;
-- small celebration highlight;
-- restrained pixel confetti;
-- highest visual priority.
+Coral border, `TODAY` badge, small celebration highlight and restrained pixel confetti.
 
 ### Coming soon
 
-- Mint badge;
-- standard dark card;
-- day countdown emphasized over the full date.
+Mint badge, standard dark card and emphasized day countdown.
 
 ### Later
 
-- Lavender or neutral badge;
-- calm presentation;
-- no glow or celebration effect.
+Lavender or neutral badge, calm presentation and no glow.
 
 ### Missed or incomplete
 
-- muted presentation;
-- small Danger indicator;
-- no aggressive warning styling.
+Muted presentation and a small Danger indicator without aggressive warning styling.
 
 ## 14. Empty and exceptional states
 
-Empty states should feel inviting rather than broken.
-
-Example concept:
-
-> The squirrel sits beside an empty acorn box.  
-> “It is quiet here. Shall we add the first birthday?”
-
-Suggested mascot situations:
-
-- no upcoming birthdays: the squirrel rests;
-- notifications disabled: the squirrel holds a silent bell;
-- import error: the squirrel studies a damaged calendar;
-- setup complete: the squirrel places an acorn into storage.
+Empty states should feel inviting rather than broken. The mascot may sit beside an empty acorn box, rest when no birthdays are coming, hold a silent bell when notifications are disabled or study a damaged calendar after an import error.
 
 ## 15. Motion system
-
-Motion is short, purposeful and optional.
 
 Recommended timing:
 
@@ -461,148 +302,67 @@ Recommended timing:
 - mascot motion: 500–900 ms;
 - celebration sequence: up to 1500 ms.
 
-Allowed motion:
-
-- a gentle tail movement;
-- blinking;
-- a tiny jump;
-- storing or revealing an acorn;
-- candle flicker;
-- pixel confetti;
-- star twinkle;
-- button press depth;
-- an element assembling from pixels.
+Allowed motion includes a gentle tail movement, blinking, a tiny jump, storing an acorn, candle flicker, pixel confetti, star twinkle and button press depth.
 
 Avoid permanent background motion, endless confetti, long blocking transitions, excessive shaking, 3D camera effects and motion blur.
 
 ## 16. Navigation
 
-The bottom navigation uses:
-
-- Deep Indigo background;
-- a pixel-like top border;
-- approximately 72–80 dp total height;
-- no more than four primary destinations.
-
-Suggested destinations:
-
-- Birthdays;
-- Calendar;
-- Add;
-- Settings.
+Bottom navigation uses Deep Indigo, a pixel-like top border, approximately 72–80 dp height and no more than four primary destinations: Birthdays, Calendar, Add and Settings.
 
 The Add action may be Coral and slightly elevated, but should use a carved square or octagonal shape rather than a generic circular floating action button.
 
 ## 17. Notifications
 
-The notification icon should be simple and monochrome:
+The notification icon should be simple and monochrome: either the squirrel head and tail silhouette or an acorn with a candle.
 
-- squirrel head and tail silhouette; or
-- acorn with a candle.
-
-Notification copy should be warm, brief and immediately useful:
-
-- “It is Anna’s birthday today.”
-- “Maxim’s birthday is in 3 days.”
-- “Olga’s birthday is tomorrow.”
-
-The brand voice must never delay understanding of the notification.
+Copy must remain warm, brief and immediately useful.
 
 ## 18. Pro presentation
 
-Pro should not resemble a gold casino interface.
-
-Use:
-
-- Peach;
-- Candle Cream;
-- small Lavender accents;
-- an acorn with a star;
-- the brand gradient in moderation.
-
-The preferred Pro symbol is a warm golden acorn with a small star. Pro represents optional support and enhancements, not artificial hostility toward free users.
+Use Peach, Candle Cream, small Lavender accents, an acorn with a star and the brand gradient in moderation. Pro should feel like optional support and enhancement, not a gold casino interface.
 
 ## 19. Accessibility
 
-The decorative system must preserve practical accessibility:
-
-- high contrast for important text;
-- color is never the only status indicator;
-- statuses also use text or icons;
-- touch areas are at least 48 dp;
-- system font scaling is supported;
-- essential information never depends on animation;
-- Reduce Motion is respected;
-- no high-frequency flashing.
-
-Cream is preferred over pure white on dark surfaces to reduce visual harshness.
+- maintain high contrast for important text;
+- never use color as the only status indicator;
+- keep touch targets at least 48 dp;
+- support system font scaling;
+- respect Reduce Motion;
+- avoid high-frequency flashing;
+- prefer Cream over pure white on dark surfaces.
 
 ## 20. Brand voice
 
-BdaySquirrel communicates in a way that is:
-
-- concise;
-- calm;
-- friendly;
-- gently playful;
-- free of corporate language;
-- free of pressure;
-- not overloaded with jokes or emoji.
+BdaySquirrel communicates concisely, calmly and warmly, with gentle playfulness and no corporate language, pressure or excessive emoji.
 
 Good examples:
 
-- “Birthday added”
-- “Everything is saved”
-- “3 days until the celebration”
-- “No birthdays here yet”
-- “The squirrel remembered it”
-- “Notifications are on”
+- “Birthday added.”
+- “Everything is saved.”
+- “3 days until the celebration.”
+- “The squirrel remembered it.”
+- “Notifications are on.”
 
-Avoid:
+## 21. Prohibited visual choices
 
-- bureaucratic confirmation language;
-- exaggerated error messages;
-- pressure such as “URGENTLY congratulate your friend”;
-- technical database terminology;
-- excessive punctuation and emoji.
-
-## 21. Do not use
-
-The BdaySquirrel visual system does not use:
+Do not use:
 
 - generic neon cyberpunk;
-- large acid-pink surfaces;
-- gradients on every component;
-- glassmorphism;
-- heavy blur;
+- acid-pink backgrounds;
+- gradients everywhere;
+- glass cards or heavy blur;
 - soft realistic shadows;
-- default Material cards as the final visual language;
-- excessive pill shapes;
-- a realistic 3D squirrel;
-- baby-cartoon styling;
-- unreadable retro game fonts;
-- decoration in every empty space;
-- pure black `#000000` as the main background;
-- pure white `#FFFFFF` as the main text color.
+- generic Material cards;
+- excessive rounded pills;
+- realistic 3D squirrels;
+- childish mascot proportions;
+- unreadable retro-game fonts;
+- pure black as the main background;
+- pure white as the main text color;
+- raster logo assets in the repository.
 
-## 22. Final brand image
-
-BdaySquirrel should feel like a friendly game from an alternative version of the 1980s, rebuilt as a modern, reliable and private utility app.
-
-Its core recognizable assets are:
-
-- a dark plum background;
-- a coral pixel squirrel;
-- an S-shaped tail;
-- an acorn with a birthday candle;
-- cream typography;
-- mint and lavender status accents;
-- carved corners;
-- hard pixel shadows;
-- brief game-like feedback;
-- a calm, clear product interface.
-
-### Brand formula
+## 22. Final brand formula
 
 **Friendly squirrel + important dates + carved pixel geometry + warm Retrowave atmosphere.**
 
