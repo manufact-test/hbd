@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -488,8 +487,12 @@ private fun AddBirthdaySheet(
     val dayValue = day.toIntOrNull()
     val monthValue = month.toIntOrNull()
     val yearValue = year.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
-    val validDate = dayValue != null && monthValue != null && runCatching {
-        LocalDate.of(2000, monthValue, dayValue)
+    val validDate = runCatching {
+        LocalDate.of(
+            2000,
+            requireNotNull(monthValue),
+            requireNotNull(dayValue),
+        )
     }.isSuccess
     val validYearText = year.isBlank() || yearValue != null
     val validYear = yearValue == null || yearValue in 1900..LocalDate.now().year
@@ -638,9 +641,9 @@ private fun dayWord(days: Long): String {
     val lastTwo = days % 100
     val last = days % 10
     return when {
-        lastTwo in 11..14 -> "дней"
+        lastTwo in 11L..14L -> "дней"
         last == 1L -> "день"
-        last in 2..4 -> "дня"
+        last in 2L..4L -> "дня"
         else -> "дней"
     }
 }
