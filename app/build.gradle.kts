@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.bdaysquirrel.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.bdaysquirrel.app"
