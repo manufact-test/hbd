@@ -1,6 +1,7 @@
 package com.bdaysquirrel.app.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -22,6 +23,7 @@ data class BirthdayEntity(
     val month: Int,
     val year: Int? = null,
     val note: String = "",
+    val photoUri: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
 )
 
@@ -39,8 +41,9 @@ interface BirthdayDao {
 
 @Database(
     entities = [BirthdayEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
 )
 abstract class BdayDatabase : RoomDatabase() {
     abstract fun birthdayDao(): BirthdayDao
@@ -66,6 +69,7 @@ class BirthdayRepository(
         month: Int,
         year: Int?,
         note: String,
+        photoUri: String?,
     ) {
         dao.insert(
             BirthdayEntity(
@@ -74,6 +78,28 @@ class BirthdayRepository(
                 month = month,
                 year = year,
                 note = note.trim(),
+                photoUri = photoUri,
+            ),
+        )
+    }
+
+    suspend fun update(
+        birthday: BirthdayEntity,
+        name: String,
+        day: Int,
+        month: Int,
+        year: Int?,
+        note: String,
+        photoUri: String?,
+    ) {
+        dao.insert(
+            birthday.copy(
+                name = name.trim(),
+                day = day,
+                month = month,
+                year = year,
+                note = note.trim(),
+                photoUri = photoUri,
             ),
         )
     }
