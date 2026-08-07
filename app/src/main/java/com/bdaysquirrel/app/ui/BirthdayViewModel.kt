@@ -54,6 +54,7 @@ class BirthdayViewModel(
         month: Int,
         year: Int?,
         note: String,
+        photoUri: String?,
     ) {
         viewModelScope.launch {
             repository.add(
@@ -62,6 +63,29 @@ class BirthdayViewModel(
                 month = month,
                 year = year,
                 note = note,
+                photoUri = photoUri,
+            )
+        }
+    }
+
+    fun updateBirthday(
+        birthday: BirthdayEntity,
+        name: String,
+        day: Int,
+        month: Int,
+        year: Int?,
+        note: String,
+        photoUri: String?,
+    ) {
+        viewModelScope.launch {
+            repository.update(
+                birthday = birthday,
+                name = name,
+                day = day,
+                month = month,
+                year = year,
+                note = note,
+                photoUri = photoUri,
             )
         }
     }
