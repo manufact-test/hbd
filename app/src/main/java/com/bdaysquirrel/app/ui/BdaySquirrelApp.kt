@@ -313,14 +313,14 @@ private fun HeroPanel(totalBirthdays: Int) {
                     text = if (totalBirthdays == 0) {
                         "Белочка готова собирать важные даты"
                     } else {
-                        "В памяти уже ${birthdayCountLabel(totalBirthdays)}"
+                        "Сохранено ${birthdayCountLabel(totalBirthdays)}"
                     },
                     style = MaterialTheme.typography.titleMedium,
                     color = Cream,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Все данные хранятся только на этом устройстве.",
+                    text = "Поздравляй вовремя.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MutedText,
                 )
@@ -585,12 +585,6 @@ private fun BirthdayEditorSheet(
                 text = if (birthday == null) "Новый день рождения" else "Редактировать карточку",
                 style = MaterialTheme.typography.titleLarge,
                 color = Cream,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Дата выбирается стандартным окном Android. Год при желании можно не хранить.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MutedText,
             )
             Spacer(modifier = Modifier.height(20.dp))
 
