@@ -15,6 +15,9 @@ val generatedLauncherResFile = layout.buildDirectory.get().asFile.resolve(
 )
 
 val generateBdaySquirrelLauncherIcon = tasks.register("generateBdaySquirrelLauncherIcon") {
+    notCompatibleWithConfigurationCache(
+        "Reads the maintained branding SVG and generates an Android launcher resource.",
+    )
     inputs.file(approvedSquirrelSvg)
     outputs.dir(generatedLauncherResDir)
 
