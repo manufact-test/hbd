@@ -6,6 +6,68 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+val approvedSquirrelSvg = rootProject.layout.projectDirectory.file(
+    "branding/assets/logo/bdaysquirrel-squirrel-icon.svg",
+)
+val generatedLauncherResDir = layout.buildDirectory.dir("generated/bdaysquirrel-launcher/res")
+
+val generateBdaySquirrelLauncherIcon = tasks.register("generateBdaySquirrelLauncherIcon") {
+    inputs.file(approvedSquirrelSvg)
+    outputs.dir(generatedLauncherResDir)
+
+    doLast {
+        val svg = approvedSquirrelSvg.asFile.readText()
+        val pathTags = Regex("""<path\b[^>]*/>""")
+            .findAll(svg)
+            .map { it.value }
+            .toList()
+
+        require(pathTags.isNotEmpty()) {
+            "No SVG paths found in ${approvedSquirrelSvg.asFile}"
+        }
+
+        val fillRegex = Regex("""fill="([^"]+)"""")
+        val dataRegex = Regex("""d="([^"]+)"""")
+        val vectorPaths = pathTags.mapNotNull { tag ->
+            val fill = fillRegex.find(tag)?.groupValues?.get(1)
+            val data = dataRegex.find(tag)?.groupValues?.get(1)
+            if (fill == null || data == null || fill == "none") {
+                null
+            } else {
+                "        <path android:fillColor=\"$fill\" android:pathData=\"$data\" />"
+            }
+        }
+
+        require(vectorPaths.isNotEmpty()) {
+            "No drawable SVG paths found in ${approvedSquirrelSvg.asFile}"
+        }
+
+        val outputFile = generatedLauncherResDir.get()
+            .file("drawable/ic_launcher_foreground.xml")
+            .asFile
+        outputFile.parentFile.mkdirs()
+        outputFile.writeText(
+            """<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:pivotX="0"
+        android:pivotY="0"
+        android:scaleX="1.10"
+        android:scaleY="1.10"
+        android:translateX="22.1"
+        android:translateY="27.6">
+${vectorPaths.joinToString("\n")}
+    </group>
+</vector>
+""",
+        )
+    }
+}
+
 android {
     namespace = "com.bdaysquirrel.app"
     compileSdk = 37
@@ -14,14 +76,15 @@ android {
         applicationId = "com.bdaysquirrel.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     sourceSets {
         getByName("main").assets.srcDir("../branding/assets/logo")
+        getByName("main").res.srcDir(generatedLauncherResDir)
     }
 
     signingConfigs {
@@ -61,6 +124,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn(generateBdaySquirrelLauncherIcon)
 }
 
 kotlin {
