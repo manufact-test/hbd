@@ -1,5 +1,11 @@
 package com.bdaysquirrel.app.ui
 
+import android.app.DatePickerDialog
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,13 +24,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -32,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Shapes
@@ -44,21 +56,26 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.bdaysquirrel.app.data.BirthdayEntity
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -145,6 +162,7 @@ fun BdaySquirrelRoot(viewModel: BirthdayViewModel) {
         BirthdayScreen(
             state = state,
             onAddBirthday = viewModel::addBirthday,
+            onUpdateBirthday = viewModel::updateBirthday,
             onDeleteBirthday = viewModel::deleteBirthday,
         )
     }
@@ -154,10 +172,12 @@ fun BdaySquirrelRoot(viewModel: BirthdayViewModel) {
 @Composable
 private fun BirthdayScreen(
     state: BirthdayUiState,
-    onAddBirthday: (String, Int, Int, Int?, String) -> Unit,
+    onAddBirthday: (String, Int, Int, Int?, String, String?) -> Unit,
+    onUpdateBirthday: (BirthdayEntity, String, Int, Int, Int?, String, String?) -> Unit,
     onDeleteBirthday: (BirthdayEntity) -> Unit,
 ) {
     var showAddSheet by rememberSaveable { mutableStateOf(false) }
+    var editingBirthday by remember { mutableStateOf<BirthdayEntity?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -210,6 +230,7 @@ private fun BirthdayScreen(
                 ) { birthday ->
                     BirthdayCard(
                         model = birthday,
+                        onEdit = { editingBirthday = birthday.birthday },
                         onDelete = { onDeleteBirthday(birthday.birthday) },
                     )
                 }
@@ -218,11 +239,23 @@ private fun BirthdayScreen(
     }
 
     if (showAddSheet) {
-        AddBirthdaySheet(
+        BirthdayEditorSheet(
+            birthday = null,
             onDismiss = { showAddSheet = false },
-            onAdd = { name, day, month, year, note ->
-                onAddBirthday(name, day, month, year, note)
+            onSave = { name, day, month, year, note, photoUri ->
+                onAddBirthday(name, day, month, year, note, photoUri)
                 showAddSheet = false
+            },
+        )
+    }
+
+    editingBirthday?.let { birthday ->
+        BirthdayEditorSheet(
+            birthday = birthday,
+            onDismiss = { editingBirthday = null },
+            onSave = { name, day, month, year, note, photoUri ->
+                onUpdateBirthday(birthday, name, day, month, year, note, photoUri)
+                editingBirthday = null
             },
         )
     }
@@ -261,16 +294,17 @@ private fun HeroPanel(totalBirthdays: Int) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(72.dp)
                     .clip(CutCornerShape(topStart = 12.dp, bottomEnd = 12.dp))
-                    .background(SquirrelCoral),
+                    .background(DeepIndigo)
+                    .padding(5.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = "S",
-                    color = DarkText,
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.Black,
+                AsyncImage(
+                    model = "file:///android_asset/bdaysquirrel-squirrel-icon.svg",
+                    contentDescription = "BdaySquirrel",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
                 )
             }
 
@@ -357,6 +391,7 @@ private fun EmptyBirthdays(onAddClick: () -> Unit) {
 @Composable
 private fun BirthdayCard(
     model: BirthdayUiModel,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val dateFormatter = DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault())
@@ -367,26 +402,38 @@ private fun BirthdayCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                modifier = Modifier
-                    .width(64.dp)
-                    .clip(CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp))
-                    .background(DeepIndigo)
-                    .padding(vertical = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = model.nextDate.dayOfMonth.toString(),
-                    color = Peach,
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.Black,
+            if (model.birthday.photoUri != null) {
+                AsyncImage(
+                    model = Uri.parse(model.birthday.photoUri),
+                    contentDescription = "Фото ${model.birthday.name}",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp))
+                        .background(DeepIndigo),
+                    contentScale = ContentScale.Crop,
                 )
-                Text(
-                    text = shortMonthFormatter.format(model.nextDate).uppercase(Locale.getDefault()),
-                    color = MutedText,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .width(64.dp)
+                        .clip(CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp))
+                        .background(DeepIndigo)
+                        .padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = model.nextDate.dayOfMonth.toString(),
+                        color = Peach,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Black,
+                    )
+                    Text(
+                        text = shortMonthFormatter.format(model.nextDate).uppercase(Locale.getDefault()),
+                        color = MutedText,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(14.dp))
@@ -429,12 +476,21 @@ private fun BirthdayCard(
                 }
             }
 
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Удалить",
-                    tint = MutedText,
-                )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Редактировать",
+                        tint = Mint,
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Удалить",
+                        tint = MutedText,
+                    )
+                }
             }
         }
     }
@@ -472,30 +528,43 @@ private fun PixelPanel(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddBirthdaySheet(
+private fun BirthdayEditorSheet(
+    birthday: BirthdayEntity?,
     onDismiss: () -> Unit,
-    onAdd: (String, Int, Int, Int?, String) -> Unit,
+    onSave: (String, Int, Int, Int?, String, String?) -> Unit,
 ) {
-    var name by rememberSaveable { mutableStateOf("") }
-    var day by rememberSaveable { mutableStateOf("") }
-    var month by rememberSaveable { mutableStateOf("") }
-    var year by rememberSaveable { mutableStateOf("") }
-    var note by rememberSaveable { mutableStateOf("") }
-    var attemptedSubmit by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    val locale = Locale.getDefault()
+    val today = LocalDate.now()
+    val initialDate = remember(birthday?.id) { editorInitialDate(birthday) }
 
-    val dayValue = day.toIntOrNull()
-    val monthValue = month.toIntOrNull()
-    val yearValue = year.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
-    val validDate = runCatching {
-        LocalDate.of(
-            2000,
-            requireNotNull(monthValue),
-            requireNotNull(dayValue),
-        )
-    }.isSuccess
-    val validYearText = year.isBlank() || yearValue != null
-    val validYear = yearValue == null || yearValue in 1900..LocalDate.now().year
-    val isValid = name.isNotBlank() && validDate && validYearText && validYear
+    var name by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.name.orEmpty()) }
+    var selectedDateEpochDay by rememberSaveable(birthday?.id) {
+        mutableStateOf(initialDate?.toEpochDay())
+    }
+    var yearUnknown by rememberSaveable(birthday?.id) {
+        mutableStateOf(birthday != null && birthday.year == null)
+    }
+    var note by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.note.orEmpty()) }
+    var photoUri by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.photoUri) }
+    var attemptedSubmit by rememberSaveable(birthday?.id) { mutableStateOf(false) }
+
+    val selectedDate = selectedDateEpochDay?.let(LocalDate::ofEpochDay)
+    val isValid = name.isNotBlank() && selectedDate != null
+
+    val photoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
+            photoUri = uri.toString()
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -508,21 +577,81 @@ private fun AddBirthdaySheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp),
         ) {
             Text(
-                text = "Новый день рождения",
+                text = if (birthday == null) "Новый день рождения" else "Редактировать карточку",
                 style = MaterialTheme.typography.titleLarge,
                 color = Cream,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Год можно не указывать — напоминание всё равно будет работать.",
+                text = "Дата выбирается стандартным окном Android. Год при желании можно не хранить.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MutedText,
             )
             Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(84.dp)
+                        .clip(CutCornerShape(topStart = 10.dp, bottomEnd = 10.dp))
+                        .background(CardViolet),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (photoUri != null) {
+                        AsyncImage(
+                            model = Uri.parse(photoUri),
+                            contentDescription = "Выбранное фото",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = null,
+                            tint = MutedText,
+                            modifier = Modifier.size(34.dp),
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    OutlinedButton(
+                        onClick = {
+                            photoPicker.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (photoUri == null) "Добавить фото" else "Сменить фото")
+                    }
+                    if (photoUri != null) {
+                        TextButton(
+                            onClick = { photoUri = null },
+                            modifier = Modifier.align(Alignment.End),
+                        ) {
+                            Text("Убрать фото", color = MutedText)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             OutlinedTextField(
                 value = name,
@@ -535,40 +664,62 @@ private fun AddBirthdaySheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            OutlinedButton(
+                onClick = {
+                    val pickerDate = selectedDate ?: today.minusYears(30)
+                    DatePickerDialog(
+                        context,
+                        { _, year, monthZeroBased, dayOfMonth ->
+                            selectedDateEpochDay = LocalDate.of(
+                                year,
+                                monthZeroBased + 1,
+                                dayOfMonth,
+                            ).toEpochDay()
+                        },
+                        pickerDate.year,
+                        pickerDate.monthValue - 1,
+                        pickerDate.dayOfMonth,
+                    ).apply {
+                        datePicker.maxDate = today
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli()
+                    }.show()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
             ) {
-                OutlinedTextField(
-                    value = day,
-                    onValueChange = { day = it.filter(Char::isDigit).take(2) },
-                    modifier = Modifier.weight(1f),
-                    label = { Text("День") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = null,
                 )
-                OutlinedTextField(
-                    value = month,
-                    onValueChange = { month = it.filter(Char::isDigit).take(2) },
-                    modifier = Modifier.weight(1f),
-                    label = { Text("Месяц") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
-                )
-                OutlinedTextField(
-                    value = year,
-                    onValueChange = { year = it.filter(Char::isDigit).take(4) },
-                    modifier = Modifier.weight(1.25f),
-                    label = { Text("Год") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = selectedDate?.let {
+                        val pattern = if (yearUnknown) "d MMMM" else "d MMMM yyyy"
+                        DateTimeFormatter.ofPattern(pattern, locale).format(it)
+                    } ?: "Выбрать дату рождения",
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = yearUnknown,
+                    onCheckedChange = { yearUnknown = it },
+                )
+                Text(
+                    text = "Не указывать год рождения",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SoftCream,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = note,
@@ -583,7 +734,7 @@ private fun AddBirthdaySheet(
             if (attemptedSubmit && !isValid) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Проверь имя и дату. Год должен быть от 1900 до текущего.",
+                    text = "Укажи имя и выбери дату рождения.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Danger,
                 )
@@ -594,13 +745,15 @@ private fun AddBirthdaySheet(
             Button(
                 onClick = {
                     attemptedSubmit = true
-                    if (isValid) {
-                        onAdd(
+                    val date = selectedDate
+                    if (isValid && date != null) {
+                        onSave(
                             name.trim(),
-                            requireNotNull(dayValue),
-                            requireNotNull(monthValue),
-                            yearValue,
+                            date.dayOfMonth,
+                            date.monthValue,
+                            if (yearUnknown) null else date.year,
                             note.trim(),
+                            photoUri,
                         )
                     }
                 },
@@ -614,7 +767,7 @@ private fun AddBirthdaySheet(
                 ),
                 border = BorderStroke(2.dp, DarkOutline),
             ) {
-                Text("Сохранить день рождения")
+                Text(if (birthday == null) "Сохранить день рождения" else "Сохранить изменения")
             }
 
             TextButton(
@@ -628,6 +781,13 @@ private fun AddBirthdaySheet(
             }
         }
     }
+}
+
+private fun editorInitialDate(birthday: BirthdayEntity?): LocalDate? {
+    birthday ?: return null
+    val year = birthday.year ?: 2000
+    val yearMonth = YearMonth.of(year, birthday.month)
+    return yearMonth.atDay(birthday.day.coerceAtMost(yearMonth.lengthOfMonth()))
 }
 
 private fun countdownLabel(days: Long): String = when (days) {
