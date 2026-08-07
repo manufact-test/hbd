@@ -36,6 +36,9 @@ jobs:
       - name: Install Android SDK 37
         run: sdkmanager --channel=3 "platforms;android-37.0" "build-tools;37.0.0"
 
+      - name: Prepare stable development signing key
+        run: base64 --decode .github/dev-signing/bdaysquirrel-debug.keystore.b64 > app/bdaysquirrel-dev.keystore
+
       - name: Assemble debug APK
         run: gradle --no-daemon :app:assembleDebug
 
