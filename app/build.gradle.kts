@@ -10,6 +10,9 @@ val approvedSquirrelSvg = rootProject.layout.projectDirectory.file(
     "branding/assets/logo/bdaysquirrel-squirrel-icon.svg",
 )
 val generatedLauncherResDir = layout.buildDirectory.dir("generated/bdaysquirrel-launcher/res")
+val generatedLauncherResFile = layout.buildDirectory.get().asFile.resolve(
+    "generated/bdaysquirrel-launcher/res",
+)
 
 val generateBdaySquirrelLauncherIcon = tasks.register("generateBdaySquirrelLauncherIcon") {
     inputs.file(approvedSquirrelSvg)
@@ -84,7 +87,7 @@ android {
 
     sourceSets {
         getByName("main").assets.srcDir("../branding/assets/logo")
-        getByName("main").res.srcDir(generatedLauncherResDir)
+        getByName("main").res.srcDir(generatedLauncherResFile)
     }
 
     signingConfigs {
