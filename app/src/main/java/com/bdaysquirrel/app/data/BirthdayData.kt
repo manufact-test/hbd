@@ -1,7 +1,6 @@
 package com.bdaysquirrel.app.data
 
 import android.content.Context
-import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -12,6 +11,8 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "birthdays")
@@ -39,11 +40,16 @@ interface BirthdayDao {
     suspend fun delete(birthday: BirthdayEntity)
 }
 
+private val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE birthdays ADD COLUMN photoUri TEXT")
+    }
+}
+
 @Database(
     entities = [BirthdayEntity::class],
     version = 2,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
 )
 abstract class BdayDatabase : RoomDatabase() {
     abstract fun birthdayDao(): BirthdayDao
@@ -54,7 +60,9 @@ abstract class BdayDatabase : RoomDatabase() {
                 context.applicationContext,
                 BdayDatabase::class.java,
                 "bdaysquirrel.db",
-            ).build()
+            )
+                .addMigrations(MIGRATION_1_2)
+                .build()
     }
 }
 
