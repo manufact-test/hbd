@@ -24,7 +24,19 @@ android {
         getByName("main").assets.srcDir("../branding/assets/logo")
     }
 
+    signingConfigs {
+        create("development") {
+            storeFile = file("bdaysquirrel-dev.keystore")
+            storePassword = "bdaysquirrel-dev"
+            keyAlias = "bdaysquirrel-dev"
+            keyPassword = "bdaysquirrel-dev"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("development")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
