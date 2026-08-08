@@ -192,7 +192,7 @@ class BirthdayBackupService(
                 restoredParent.listFiles()
                     .orEmpty()
                     .filter { it != restoredDir }
-                    .forEach(File::deleteRecursively)
+                    .forEach { oldDirectory -> oldDirectory.deleteRecursively() }
             }
 
             BackupImportResult(
@@ -238,7 +238,10 @@ class BirthdayBackupService(
     }
 
     private fun openPhotoInput(uri: Uri): InputStream? = when (uri.scheme) {
-        "file" -> uri.path?.let(::File)?.takeIf(File::exists)?.let(::FileInputStream)
+        "file" -> uri.path
+            ?.let(::File)
+            ?.takeIf { it.exists() }
+            ?.let(::FileInputStream)
         else -> contentResolver.openInputStream(uri)
     }
 
