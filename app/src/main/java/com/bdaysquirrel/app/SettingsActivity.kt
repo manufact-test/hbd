@@ -287,7 +287,9 @@ private fun SettingsScreen(
                             onClick = {
                                 requestNotificationAccess(
                                     context = context,
-                                    permissionLauncher = permissionLauncher::launch,
+                                    permissionLauncher = { permission ->
+                                        permissionLauncher.launch(permission)
+                                    },
                                 )
                             },
                             colors = ButtonDefaults.buttonColors(
