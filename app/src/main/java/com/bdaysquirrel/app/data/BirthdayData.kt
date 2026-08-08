@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
@@ -29,15 +30,32 @@ data class BirthdayEntity(
 )
 
 @Dao
-interface BirthdayDao {
+abstract class BirthdayDao {
     @Query("SELECT * FROM birthdays ORDER BY month, day, name COLLATE NOCASE")
-    fun observeAll(): Flow<List<BirthdayEntity>>
+    abstract fun observeAll(): Flow<List<BirthdayEntity>>
+
+    @Query("SELECT * FROM birthdays ORDER BY createdAt, id")
+    abstract suspend fun snapshot(): List<BirthdayEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(birthday: BirthdayEntity)
+    abstract suspend fun insert(birthday: BirthdayEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertAll(birthdays: List<BirthdayEntity>)
 
     @Delete
-    suspend fun delete(birthday: BirthdayEntity)
+    abstract suspend fun delete(birthday: BirthdayEntity)
+
+    @Query("DELETE FROM birthdays")
+    abstract suspend fun deleteAll()
+
+    @Transaction
+    open suspend fun replaceAll(birthdays: List<BirthdayEntity>) {
+        deleteAll()
+        if (birthdays.isNotEmpty()) {
+            insertAll(birthdays)
+        }
+    }
 }
 
 private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -114,5 +132,11 @@ class BirthdayRepository(
 
     suspend fun delete(birthday: BirthdayEntity) {
         dao.delete(birthday)
+    }
+
+    suspend fun snapshot(): List<BirthdayEntity> = dao.snapshot()
+
+    suspend fun replaceAll(birthdays: List<BirthdayEntity>) {
+        dao.replaceAll(birthdays)
     }
 }
