@@ -42,6 +42,7 @@ class BirthdayReminderScheduler(context: Context) {
         Context.MODE_PRIVATE,
     )
 
+    @Synchronized
     fun sync(
         birthdays: List<BirthdayEntity>,
         settings: ReminderSettings,
@@ -61,11 +62,10 @@ class BirthdayReminderScheduler(context: Context) {
                 )
 
                 val alarmUri = reminderUri(birthday.id, offsetDays)
-                val pendingIntent = reminderPendingIntent(
+                val pendingIntent = createReminderPendingIntent(
                     alarmUri = alarmUri,
                     birthday = birthday,
                     offsetDays = offsetDays,
-                    flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
 
                 alarmManager.setAndAllowWhileIdle(
@@ -89,13 +89,7 @@ class BirthdayReminderScheduler(context: Context) {
             .toSet()
 
         alarmUris.forEach { alarmUri ->
-            val pendingIntent = reminderPendingIntent(
-                alarmUri = alarmUri,
-                birthday = null,
-                offsetDays = null,
-                flags = PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
-            )
-            if (pendingIntent != null) {
+            findReminderPendingIntent(alarmUri)?.let { pendingIntent ->
                 alarmManager.cancel(pendingIntent)
                 pendingIntent.cancel()
             }
@@ -106,23 +100,37 @@ class BirthdayReminderScheduler(context: Context) {
             .apply()
     }
 
-    private fun reminderPendingIntent(
+    private fun createReminderPendingIntent(
         alarmUri: String,
-        birthday: BirthdayEntity?,
-        offsetDays: Int?,
-        flags: Int,
-    ): PendingIntent? {
-        val intent = Intent(appContext, BirthdayReminderReceiver::class.java).apply {
+        birthday: BirthdayEntity,
+        offsetDays: Int,
+    ): PendingIntent {
+        val intent = baseReminderIntent(alarmUri).apply {
+            putExtra(EXTRA_NAME, birthday.name)
+            putExtra(EXTRA_NOTE, birthday.note)
+            putExtra(EXTRA_OFFSET_DAYS, offsetDays)
+        }
+        return PendingIntent.getBroadcast(
+            appContext,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private fun findReminderPendingIntent(alarmUri: String): PendingIntent? =
+        PendingIntent.getBroadcast(
+            appContext,
+            0,
+            baseReminderIntent(alarmUri),
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+    private fun baseReminderIntent(alarmUri: String): Intent =
+        Intent(appContext, BirthdayReminderReceiver::class.java).apply {
             action = REMINDER_ACTION
             data = Uri.parse(alarmUri)
-            if (birthday != null && offsetDays != null) {
-                putExtra(EXTRA_NAME, birthday.name)
-                putExtra(EXTRA_NOTE, birthday.note)
-                putExtra(EXTRA_OFFSET_DAYS, offsetDays)
-            }
         }
-        return PendingIntent.getBroadcast(appContext, 0, intent, flags)
-    }
 }
 
 internal fun nextReminderTrigger(
