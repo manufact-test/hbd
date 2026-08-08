@@ -1,7 +1,9 @@
 package com.bdaysquirrel.app
 
 import android.Manifest
+import android.app.Activity
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -16,7 +18,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -61,14 +61,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bdaysquirrel.app.data.BirthdayBackupService
 import com.bdaysquirrel.app.reminders.BirthdayNotifications
@@ -286,7 +287,7 @@ private fun SettingsScreen(
                             onClick = {
                                 requestNotificationAccess(
                                     context = context,
-                                    permissionLauncher = { permissionLauncher.launch(it) },
+                                    permissionLauncher = permissionLauncher::launch,
                                 )
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -452,7 +453,7 @@ private fun ReminderToggle(
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = null,
         )
         Text(
             text = title,
@@ -493,7 +494,7 @@ private fun formatTime(settings: ReminderSettings): String = String.format(
 )
 
 private fun requestNotificationAccess(
-    context: android.content.Context,
+    context: Context,
     permissionLauncher: (String) -> Unit,
 ) {
     if (
@@ -503,15 +504,30 @@ private fun requestNotificationAccess(
             Manifest.permission.POST_NOTIFICATIONS,
         ) != PackageManager.PERMISSION_GRANTED
     ) {
-        permissionLauncher(Manifest.permission.POST_NOTIFICATIONS)
+        val activity = context as? Activity
+        if (
+            activity != null &&
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                Manifest.permission.POST_NOTIFICATIONS,
+            )
+        ) {
+            permissionLauncher(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            openNotificationSettings(context)
+        }
         return
     }
 
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-        context.startActivity(
-            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-            },
-        )
+        openNotificationSettings(context)
     }
+}
+
+private fun openNotificationSettings(context: Context) {
+    context.startActivity(
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        },
+    )
 }
