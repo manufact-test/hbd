@@ -39,6 +39,9 @@ jobs:
       - name: Prepare stable development signing key
         run: base64 --decode .github/dev-signing/bdaysquirrel-debug.keystore.b64 > app/bdaysquirrel-dev.keystore
 
+      - name: Run unit tests
+        run: gradle --no-daemon :app:testDebugUnitTest
+
       - name: Assemble debug APK
         run: gradle --no-daemon :app:assembleDebug
 
