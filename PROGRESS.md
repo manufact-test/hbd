@@ -5,15 +5,24 @@ Last updated: 2026-08-16
 ## Repository / branch
 - Repository: `manufact-test/hbd`
 - Active development branch: `feat/android-mvp-scaffold`
-- Current app version: `0.3.0`
-- Latest CI-verified package: `6e07c08f7ea9299a3714ecdd6a8bd886a8f953c1` — Android CI run #143 passed unit tests and debug APK assembly.
+- Current app version: `0.3.1`
+- Latest previously CI-verified package: `6e07c08f7ea9299a3714ecdd6a8bd886a8f953c1` — Android CI run #143 passed unit tests and debug APK assembly.
 
 ## Implemented
 - Main birthday list in the approved Retrowave / pixel BdaySquirrel visual style.
 - Local Room database for birthdays.
 - Add, edit and delete birthday cards.
 - Optional photo, note and optional unknown birth year.
-- Yearless birthday flow has a dedicated day/month picker: when `Не указывать год рождения` is enabled, the picker contains no visible year.
+- One branded custom birthday picker is now used for both modes:
+  - day + month only when the year is unknown;
+  - day + month + year when the year is known.
+- The custom picker adapts to short / square displays, switches to compact spacing and can scroll inside the dialog instead of overflowing the screen.
+- Known-year picker prevents future birth dates and provides a horizontally scrollable year strip.
+- Yearless mode keeps February 29 available.
+- Birthday cards now show zodiac sign plus birth year metadata.
+- Birthday cards can be opened in a separate read-only profile sheet instead of forcing edit mode.
+- The profile sheet shows birthday date, birth year, zodiac sign, upcoming age, next birthday countdown and the saved note, with a separate Edit action.
+- Zodiac boundary logic has unit coverage.
 - Sorting by nearest birthday and age calculation.
 - Approved squirrel branding and launcher icon pipeline.
 - Increased top spacing on the main screen using system status bar insets.
@@ -29,13 +38,14 @@ Last updated: 2026-08-16
   - 7 days before.
 - Reminder rescheduling after birthday/settings changes, reboot, time change, timezone change and app update.
 - Real-device reminder delivery has been successfully verified by the project owner.
-- Notification permission is now requested contextually after birthday data exists instead of automatically on every fresh install.
+- Notification permission is requested contextually after birthday data exists instead of automatically on every fresh install.
 - Local ZIP backup/export and restore/import including birthday data, notes and available photos.
 - Android automatic cloud backup disabled to preserve the local-first model.
 - GitHub Actions runs tests and builds the debug APK.
 
-## 0.3.0 onboarding / import package
+## Onboarding / contacts import
 - Short branded first-run onboarding with animated squirrel.
+- Onboarding copy was simplified after tester feedback: removed the local-storage/privacy explainer and unnecessary English product-language terms from the user-facing flow.
 - Start choices:
   - import birthdays from Android contacts;
   - add the first birthday manually;
@@ -45,31 +55,30 @@ Last updated: 2026-08-16
 - `READ_CONTACTS` is requested only after the user explicitly chooses contact import.
 - Contacts birthday reader supports birthdays with a known year and Android's yearless `--MM-dd` format, including February 29.
 - Contact import preview before database changes.
-- Multi-select plus `Select all` / `Clear all` controls.
+- Multi-select plus select-all / clear-all controls.
 - Likely duplicates are detected by normalized name + day + month, marked in the preview and left unselected by default.
 - Imported contacts without a birth year stay yearless in BdaySquirrel.
-- Contact data is read locally and is never uploaded.
 - Empty / denied / retry states are handled in the import flow, including a shortcut to Android app settings.
 - Successful import returns directly to the populated BdaySquirrel experience instead of a separate completion page.
-- Empty main screen now offers both contact import and manual birthday creation.
+- Empty main screen offers both contact import and manual birthday creation.
 - Contact import can also be reopened later from Settings.
 - Added unit coverage for contact birthday date parsing.
 
 ## Current QA focus
-1. First-run onboarding on a clean install.
-2. Upgrade behavior for an existing installation with stored birthdays.
-3. Contacts permission: allow, deny, retry and system-settings path.
-4. Contact import with known-year and yearless birthdays, including February 29.
-5. Duplicate marking and default selection behavior.
-6. Import of many contacts and transition back to the main birthday list.
-7. Manual-start and backup-restore onboarding paths.
-8. Contextual notification permission card after the first birthday exists.
+1. Adaptive birthday picker on the square/short-screen device that exposed the overflow bug.
+2. Known-year custom picker usability and year-strip scrolling.
+3. Yearless picker including February 29.
+4. Read-only birthday profile opening from the card and transition into edit mode.
+5. Zodiac boundaries and birth-year display for known / unknown years.
+6. Simplified onboarding on a clean install.
+7. Contacts permission: allow, deny, retry and system-settings path.
+8. Contact import with known-year and yearless birthdays.
 9. Existing animation, backup and reminder regressions.
 
 ## Roadmap — next work
 
-### 1. Real-device QA of 0.3.0 — NEXT
-Use the new package on actual Android devices and fix any provider/vendor-specific contact-format or permission behavior.
+### 1. Real-device QA of 0.3.1 — NEXT
+Test the new picker/profile package on the target devices and fix any layout or interaction edge cases.
 
 ### 2. Bulk-import polish
 - optional search/filter when the contact birthday list is long;
