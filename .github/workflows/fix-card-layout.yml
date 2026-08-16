@@ -1,0 +1,63 @@
+name: Fix birthday card effect layout
+
+on:
+  push:
+    branches:
+      - feat/android-mvp-scaffold
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix effect overlay scope
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/bdaysquirrel/app/ui/BdaySquirrelApp.kt')
+          text = path.read_text(encoding='utf-8')
+          old = '''                IconButton(onClick = onDelete) {
+                      Icon(
+                          imageVector = Icons.Default.Delete,
+                          contentDescription = "Удалить",
+                          tint = MutedText,
+                      )
+                  }
+              }
+          }
+
+          PixelBurstOverlay('''
+          new = '''                IconButton(onClick = onDelete) {
+                      Icon(
+                          imageVector = Icons.Default.Delete,
+                          contentDescription = "Удалить",
+                          tint = MutedText,
+                      )
+                  }
+              }
+          }
+          }
+
+          PixelBurstOverlay('''
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected one birthday-card scope match, got {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Remove one-shot workflow
+        run: rm .github/workflows/fix-card-layout.yml
+
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: keep pixel burst outside birthday card layout"
+          git push origin HEAD:feat/android-mvp-scaffold
