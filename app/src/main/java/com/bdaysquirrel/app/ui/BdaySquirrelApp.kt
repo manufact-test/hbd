@@ -8,6 +8,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,7 +64,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -78,6 +82,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.delay
 
 private val NightPlum = Color(0xFF171226)
 private val DeepIndigo = Color(0xFF241A3A)
@@ -178,10 +183,41 @@ private fun BirthdayScreen(
 ) {
     var showAddSheet by rememberSaveable { mutableStateOf(false) }
     var editingBirthday by remember { mutableStateOf<BirthdayEntity?>(null) }
+    var hasBirthdaySnapshot by rememberSaveable { mutableStateOf(false) }
+    var knownBirthdayIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var newlyAddedBirthdayId by remember { mutableStateOf<Long?>(null) }
+
+    val currentBirthdayIds = state.birthdays.map { it.birthday.id }
+
+    LaunchedEffect(state.isLoaded, currentBirthdayIds) {
+        if (!state.isLoaded) return@LaunchedEffect
+
+        val currentSet = currentBirthdayIds.toSet()
+        if (!hasBirthdaySnapshot) {
+            knownBirthdayIds = currentSet
+            hasBirthdaySnapshot = true
+        } else {
+            val addedIds = currentSet - knownBirthdayIds
+            if (addedIds.isNotEmpty()) {
+                newlyAddedBirthdayId = state.birthdays
+                    .firstOrNull { it.birthday.id in addedIds }
+                    ?.birthday
+                    ?.id
+            }
+            knownBirthdayIds = currentSet
+        }
+    }
+
+    LaunchedEffect(newlyAddedBirthdayId) {
+        if (newlyAddedBirthdayId != null) {
+            delay(1_300)
+            newlyAddedBirthdayId = null
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = NightPlum,
+        containerColor = Color.Transparent,
         topBar = { AppHeader() },
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -230,6 +266,7 @@ private fun BirthdayScreen(
                 ) { birthday ->
                     BirthdayCard(
                         model = birthday,
+                        burstOnEnter = birthday.birthday.id == newlyAddedBirthdayId,
                         onEdit = { editingBirthday = birthday.birthday },
                         onDelete = { onDeleteBirthday(birthday.birthday) },
                     )
@@ -286,7 +323,13 @@ private fun AppHeader() {
 
 @Composable
 private fun HeroPanel(totalBirthdays: Int) {
-    PixelPanel(modifier = Modifier.fillMaxWidth()) {
+    val visuals = rememberHeroPanelVisuals()
+
+    PixelPanel(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundBrush = visuals.backgroundBrush,
+        borderColor = visuals.borderColor,
+    ) {
         Row(
             modifier = Modifier.padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -391,13 +434,33 @@ private fun EmptyBirthdays(onAddClick: () -> Unit) {
 @Composable
 private fun BirthdayCard(
     model: BirthdayUiModel,
+    burstOnEnter: Boolean,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val dateFormatter = DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault())
     val shortMonthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.getDefault())
+    val isBirthdayToday = model.daysUntil == 0L
+    val visuals = rememberBirthdayCardVisuals(
+        birthdayId = model.birthday.id,
+        isToday = isBirthdayToday,
+        burstOnEnter = burstOnEnter,
+    )
 
-    PixelPanel(modifier = Modifier.fillMaxWidth()) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = visuals.scale
+                scaleY = visuals.scale
+            },
+    ) {
+        PixelPanel(
+            modifier = Modifier.fillMaxWidth(),
+            backgroundBrush = visuals.backgroundBrush,
+            borderColor = visuals.borderColor,
+            shadowColor = visuals.shadowColor,
+        ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -493,12 +556,21 @@ private fun BirthdayCard(
                 }
             }
         }
+
+        PixelBurstOverlay(
+            active = burstOnEnter,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
 
 @Composable
 private fun PixelPanel(
     modifier: Modifier = Modifier,
+    backgroundColor: Color = CardViolet,
+    backgroundBrush: Brush? = null,
+    borderColor: Color = RaisedViolet,
+    shadowColor: Color = DarkOutline,
     content: @Composable () -> Unit,
 ) {
     val shape = CutCornerShape(topStart = 12.dp, bottomEnd = 12.dp)
@@ -511,17 +583,24 @@ private fun PixelPanel(
                 .fillMaxSize()
                 .offset(x = 4.dp, y = 4.dp)
                 .clip(shape)
-                .background(DarkOutline),
+                .background(shadowColor),
         )
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = shape,
-            color = CardViolet,
-            contentColor = Cream,
-            border = BorderStroke(2.dp, RaisedViolet),
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            content = content,
+
+        val panelModifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .then(
+                if (backgroundBrush != null) {
+                    Modifier.background(backgroundBrush)
+                } else {
+                    Modifier.background(backgroundColor)
+                },
+            )
+            .border(BorderStroke(2.dp, borderColor), shape)
+
+        Box(
+            modifier = panelModifier,
+            content = { content() },
         )
     }
 }
@@ -548,6 +627,7 @@ private fun BirthdayEditorSheet(
     var note by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.note.orEmpty()) }
     var photoUri by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.photoUri) }
     var attemptedSubmit by rememberSaveable(birthday?.id) { mutableStateOf(false) }
+    var showYearlessPicker by rememberSaveable(birthday?.id) { mutableStateOf(false) }
 
     val selectedDate = selectedDateEpochDay?.let(LocalDate::ofEpochDay)
     val isValid = name.isNotBlank() && selectedDate != null
@@ -660,25 +740,29 @@ private fun BirthdayEditorSheet(
 
             OutlinedButton(
                 onClick = {
-                    val pickerDate = selectedDate ?: today.minusYears(30)
-                    DatePickerDialog(
-                        context,
-                        { _, year, monthZeroBased, dayOfMonth ->
-                            selectedDateEpochDay = LocalDate.of(
-                                year,
-                                monthZeroBased + 1,
-                                dayOfMonth,
-                            ).toEpochDay()
-                        },
-                        pickerDate.year,
-                        pickerDate.monthValue - 1,
-                        pickerDate.dayOfMonth,
-                    ).apply {
-                        datePicker.maxDate = today
-                            .atStartOfDay(ZoneId.systemDefault())
-                            .toInstant()
-                            .toEpochMilli()
-                    }.show()
+                    if (yearUnknown) {
+                        showYearlessPicker = true
+                    } else {
+                        val pickerDate = selectedDate ?: today.minusYears(30)
+                        DatePickerDialog(
+                            context,
+                            { _, year, monthZeroBased, dayOfMonth ->
+                                selectedDateEpochDay = LocalDate.of(
+                                    year,
+                                    monthZeroBased + 1,
+                                    dayOfMonth,
+                                ).toEpochDay()
+                            },
+                            pickerDate.year,
+                            pickerDate.monthValue - 1,
+                            pickerDate.dayOfMonth,
+                        ).apply {
+                            datePicker.maxDate = today
+                                .atStartOfDay(ZoneId.systemDefault())
+                                .toInstant()
+                                .toEpochMilli()
+                        }.show()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -694,7 +778,11 @@ private fun BirthdayEditorSheet(
                     text = selectedDate?.let {
                         val pattern = if (yearUnknown) "d MMMM" else "d MMMM yyyy"
                         DateTimeFormatter.ofPattern(pattern, locale).format(it)
-                    } ?: "Выбрать дату рождения",
+                    } ?: if (yearUnknown) {
+                        "Выбрать день и месяц"
+                    } else {
+                        "Выбрать дату рождения"
+                    },
                 )
             }
 
@@ -774,6 +862,23 @@ private fun BirthdayEditorSheet(
                 )
             }
         }
+    }
+
+    if (showYearlessPicker) {
+        val pickerDate = selectedDate ?: today
+        YearlessBirthdayPickerDialog(
+            initialMonth = pickerDate.monthValue,
+            initialDay = pickerDate.dayOfMonth,
+            locale = locale,
+            onDismiss = { showYearlessPicker = false },
+            onConfirm = { month, day ->
+                val anchorYear = selectedDate?.year ?: today.minusYears(30).year
+                val anchorMonth = YearMonth.of(anchorYear, month)
+                val storageYear = if (day <= anchorMonth.lengthOfMonth()) anchorYear else 2000
+                selectedDateEpochDay = LocalDate.of(storageYear, month, day).toEpochDay()
+                showYearlessPicker = false
+            },
+        )
     }
 }
 

@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.bdaysquirrel.app.ui.AnimatedAppBackdrop
 import com.bdaysquirrel.app.ui.BdaySquirrelRoot
 import com.bdaysquirrel.app.ui.BirthdayViewModel
 
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     .statusBarsPadding()
                     .padding(top = 8.dp),
             ) {
+                AnimatedAppBackdrop(modifier = Modifier.matchParentSize())
                 BdaySquirrelRoot(viewModel = viewModel)
 
                 IconButton(
