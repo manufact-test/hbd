@@ -23,6 +23,7 @@ data class BirthdayUiModel(
 
 data class BirthdayUiState(
     val birthdays: List<BirthdayUiModel> = emptyList(),
+    val isLoaded: Boolean = false,
 )
 
 class BirthdayViewModel(
@@ -40,6 +41,7 @@ class BirthdayViewModel(
                         compareBy<BirthdayUiModel> { it.daysUntil }
                             .thenBy { it.birthday.name.lowercase() },
                     ),
+                isLoaded = true,
             )
         }
         .stateIn(
