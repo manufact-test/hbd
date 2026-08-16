@@ -6,14 +6,14 @@ Last updated: 2026-08-16
 - Repository: `manufact-test/hbd`
 - Active development branch: `feat/android-mvp-scaffold`
 - Current app version: `0.2.0`
-- Latest CI-verified package before the current visual pass: `4c625510cfc944a4b797cb0f361ef0512dfc1bc6`
+- Latest CI-verified visual package: `3eea49090f2482f63ad55328693ab4fa9a29220c`
 
 ## Implemented
 - Main birthday list in the approved Retrowave / pixel BdaySquirrel visual style.
 - Local Room database for birthdays.
 - Add, edit and delete birthday cards.
 - Optional photo, note and optional unknown birth year.
-- Yearless birthday flow now has a dedicated day/month picker: when `Не указывать год рождения` is enabled, the picker contains no visible year.
+- Yearless birthday flow has a dedicated day/month picker: when `Не указывать год рождения` is enabled, the picker contains no visible year.
 - Sorting by nearest birthday and age calculation.
 - Approved squirrel branding and launcher icon pipeline.
 - Increased top spacing on the main screen using system status bar insets.
@@ -41,14 +41,76 @@ Last updated: 2026-08-16
 4. Verify the animated background remains smooth on mid-range Android devices and does not distract from the list.
 5. Re-check top spacing, settings, notification persistence and backup/export/import.
 
-## Next work
-1. Add an easy controlled test mode for notifications so reminders can be verified immediately instead of waiting days.
-2. Fix any device-specific UI / animation / notification issues found during QA.
-3. Continue polishing the MVP before moving to Pro / monetization features.
+## Roadmap — next work
+
+### 1. Notification test mode — NEXT
+Add a controlled test tool in Settings so a tester can trigger a real BdaySquirrel notification immediately.
+
+Requirements:
+- one-tap `Send test notification` action;
+- use the same notification channel/style as real birthday reminders;
+- clearly show whether notification permission is granted;
+- do not modify birthday data or scheduled real reminders;
+- useful for real-device QA without changing the system date or waiting for a reminder window.
+
+### 2. Contacts birthday import
+Reduce the biggest onboarding friction: manually entering many birthdays.
+
+Requirements:
+- optional Contacts permission; manual entry remains fully available without it;
+- read contacts that contain birthday information;
+- preview and multi-select before import;
+- preserve birthdays that do not have a known year;
+- detect likely duplicates against existing BdaySquirrel cards;
+- never upload contacts or birthday data anywhere.
+
+### 3. Bulk-import polish
+- clear import result summary;
+- duplicate/conflict handling;
+- easy edit after import;
+- useful empty-state prompt for first-time users.
+
+### 4. Reliability / device QA pass
+- notification delivery on common Android vendors and battery-management modes;
+- animation performance on mid-range devices;
+- backup/export/import round-trip testing;
+- regression tests for date edge cases and notification scheduling.
+
+### 5. Release preparation
+- production signing/release pipeline;
+- privacy policy/store listing assets;
+- crash-free release checklist;
+- final onboarding and permission copy;
+- release-only entitlement clock foundation for the future paid-access model.
+
+## Monetization model — UPDATED
+BdaySquirrel does **not** have a Free tier vs Pro tier and does **not** hide individual features behind feature-level paywalls.
+
+The intended model is:
+1. A new production user receives the **complete application with all functionality unlocked for the first 365 days**.
+2. The 365-day period starts from the production entitlement/trial start, not from internal debug/test builds.
+3. During that year there are no ads, no feature restrictions and no artificial limits on birthdays/reminders/import/backup.
+4. After the first year, continued normal use requires payment for the application.
+5. The preferred payment is a **one-time non-consumable purchase**, not a recurring subscription.
+6. Google Play Billing must support purchase restoration after reinstall/device change when the same Play account is used.
+7. Expiration must never delete local birthday data. An expired user should still be able to reach purchase/restore flows and a safe backup/export path.
+8. The app should warn clearly before the free year ends rather than surprise the user at the exact expiry moment.
+
+### Monetization architecture rule
+Do not build future features as `free` vs `pro` variants. Features are either part of BdaySquirrel or not.
+
+Before the public release, introduce a small centralized entitlement layer with states such as:
+- `FULL_YEAR_ACTIVE`
+- `PAYMENT_REQUIRED`
+- `PURCHASED`
+
+All screens should read one entitlement source instead of implementing billing checks individually. Actual Google Play Billing integration can be completed closer to the production release, after the core birthday experience is stable.
 
 ## Product direction
 - Android birthday reminder app.
 - Local-first and privacy-focused.
 - No ads.
-- Free core functionality with an optional lifetime Pro purchase later; no subscription.
+- Full functionality for the first year; paid continuation afterward.
+- No feature-split Free/Pro model.
+- No recurring subscription planned; preferred unlock is a one-time purchase after the first year.
 - Main promise: enter birthdays once and reliably receive reminders without needing to keep the app open.
