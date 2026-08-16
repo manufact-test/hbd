@@ -6,30 +6,28 @@ Last updated: 2026-08-16
 - Repository: `manufact-test/hbd`
 - Active development branch: `feat/android-mvp-scaffold`
 - Current app version: `0.3.1`
-- Latest previously CI-verified package: `6e07c08f7ea9299a3714ecdd6a8bd886a8f953c1` — Android CI run #143 passed unit tests and debug APK assembly.
+- Latest CI-verified package: `ba72d3fc780c2c68629a5125e805d3ef6d7766f9` — Android CI run #160 passed unit tests, debug APK assembly and artifact upload.
+- `0.3.1` has been verified by the project owner on a real Android device, including the adaptive birthday picker and read-only birthday profile.
 
-## Implemented
+## Stable implemented foundation
 - Main birthday list in the approved Retrowave / pixel BdaySquirrel visual style.
 - Local Room database for birthdays.
 - Add, edit and delete birthday cards.
 - Optional photo, note and optional unknown birth year.
-- One branded custom birthday picker is now used for both modes:
+- One branded custom birthday picker for both modes:
   - day + month only when the year is unknown;
   - day + month + year when the year is known.
-- The custom picker adapts to short / square displays, switches to compact spacing and can scroll inside the dialog instead of overflowing the screen.
+- Picker adapts to short / square displays, uses compact spacing where needed and scrolls inside the dialog instead of overflowing.
 - Known-year picker prevents future birth dates and provides a horizontally scrollable year strip.
-- Yearless mode keeps February 29 available.
-- Birthday cards now show zodiac sign plus birth year metadata.
-- Birthday cards can be opened in a separate read-only profile sheet instead of forcing edit mode.
-- The profile sheet shows birthday date, birth year, zodiac sign, upcoming age, next birthday countdown and the saved note, with a separate Edit action.
-- Zodiac boundary logic has unit coverage.
+- Yearless mode supports February 29.
+- Birthday cards show zodiac sign and birth year metadata.
+- Normal tap on a birthday card opens a separate read-only profile.
+- Profile shows birthday date, birth year, zodiac sign, upcoming age, countdown and note, with a separate Edit action.
+- Zodiac boundary logic and date edge cases have unit coverage.
 - Sorting by nearest birthday and age calculation.
 - Approved squirrel branding and launcher icon pipeline.
-- Increased top spacing on the main screen using system status bar insets.
-- Animated Retrowave background and a softly animated gradient hero panel.
-- Newly added birthday cards enter with a short pop animation and pixel-burst effect.
-- A birthday happening today gets a distinct animated gradient, pulsing border and stronger visual emphasis.
-- Entrance effects distinguish genuinely new Room records from the initial database snapshot, so opening an existing list does not explode every card.
+- Correct system status-bar inset handling.
+- Animated Retrowave background, animated hero panel, new-card pixel burst and special birthday-today state.
 - Settings screen.
 - Birthday reminders with configurable time and offsets:
   - same day;
@@ -37,106 +35,131 @@ Last updated: 2026-08-16
   - 3 days before;
   - 7 days before.
 - Reminder rescheduling after birthday/settings changes, reboot, time change, timezone change and app update.
-- Real-device reminder delivery has been successfully verified by the project owner.
-- Notification permission is requested contextually after birthday data exists instead of automatically on every fresh install.
+- Real-device notification delivery verified by the project owner.
+- Notification permission is requested contextually after birthday data exists.
 - Local ZIP backup/export and restore/import including birthday data, notes and available photos.
-- Android automatic cloud backup disabled to preserve the local-first model.
+- Android automatic cloud backup disabled.
 - GitHub Actions runs tests and builds the debug APK.
 
-## Onboarding / contacts import
+## Stable onboarding / contacts import
 - Short branded first-run onboarding with animated squirrel.
-- Onboarding copy was simplified after tester feedback: removed the local-storage/privacy explainer and unnecessary English product-language terms from the user-facing flow.
+- User-facing onboarding copy is concise and Russian-first; unnecessary privacy/storage explanations and English UI terminology were removed.
 - Start choices:
   - import birthdays from Android contacts;
   - add the first birthday manually;
   - restore an existing BdaySquirrel ZIP backup.
-- Onboarding is skippable and is not shown again after completion.
+- Onboarding is skippable and not shown again after completion.
 - Existing installations with birthday data skip first-run onboarding automatically.
 - `READ_CONTACTS` is requested only after the user explicitly chooses contact import.
-- Contacts birthday reader supports birthdays with a known year and Android's yearless `--MM-dd` format, including February 29.
+- Contacts birthday reader supports known-year and Android yearless `--MM-dd` birthdays, including February 29.
 - Contact import preview before database changes.
 - Multi-select plus select-all / clear-all controls.
-- Likely duplicates are detected by normalized name + day + month, marked in the preview and left unselected by default.
-- Imported contacts without a birth year stay yearless in BdaySquirrel.
-- Empty / denied / retry states are handled in the import flow, including a shortcut to Android app settings.
-- Successful import returns directly to the populated BdaySquirrel experience instead of a separate completion page.
-- Empty main screen offers both contact import and manual birthday creation.
-- Contact import can also be reopened later from Settings.
-- Added unit coverage for contact birthday date parsing.
+- Likely duplicates are detected by normalized name + day + month, marked and left unselected by default.
+- Imported contacts without a birth year stay yearless.
+- Empty / denied / retry permission states are handled, including a shortcut to Android app settings.
+- Successful import returns directly to the populated main screen.
+- Empty main screen offers contact import or manual creation.
+- Contact import can be reopened later from Settings.
+- Contact birthday parsing has unit coverage.
 
-## Current QA focus
-1. Adaptive birthday picker on the square/short-screen device that exposed the overflow bug.
-2. Known-year custom picker usability and year-strip scrolling.
-3. Yearless picker including February 29.
-4. Read-only birthday profile opening from the card and transition into edit mode.
-5. Zodiac boundaries and birth-year display for known / unknown years.
-6. Simplified onboarding on a clean install.
-7. Contacts permission: allow, deny, retry and system-settings path.
-8. Contact import with known-year and yearless birthdays.
-9. Existing animation, backup and reminder regressions.
+## Current QA status
+The 0.3.1 interaction package is accepted on the primary real device. QA is no longer blocking the next functional milestone.
+
+Keep regression coverage for:
+1. reminders and rescheduling;
+2. backup/export/import round trips;
+3. contact import and duplicate handling;
+4. leap-day / yearless dates;
+5. square / short-screen picker layout;
+6. animation performance on mid-range Android devices.
 
 ## Roadmap — next work
 
-### 1. Real-device QA of 0.3.1 — NEXT
-Test the new picker/profile package on the target devices and fix any layout or interaction edge cases.
+### 1. 0.4.0 — Find & Calendar — NEXT
+The next package should make a large birthday collection easy to navigate after contact import.
 
-### 2. Bulk-import polish
-- optional search/filter when the contact birthday list is long;
-- stronger duplicate/conflict controls if tester data reveals ambiguous matches;
-- easy edit immediately after an imported card needs correction;
-- refine copy and spacing from tester screenshots.
+Planned functionality:
+- add fast search by person name;
+- include saved notes in search where useful;
+- keep the current nearest-birthday list as the default view;
+- add a clear `По месяцам` view for browsing birthdays by month;
+- show month sections / month selector with birthday counts;
+- jump quickly to the current or next relevant month;
+- preserve the same birthday cards and tap-to-open profile behavior in both views;
+- empty search/month states should be useful rather than blank;
+- search/filter state must not change reminder scheduling or birthday data;
+- keep scrolling and filtering smooth with hundreds of imported birthdays.
 
-### 3. First-use polish
-- tune onboarding motion and pacing from real-device feedback;
-- refine empty-state presentation;
-- add only lightweight contextual hints where testers actually get stuck.
+Design rule: do not turn BdaySquirrel into a generic calendar. The calendar/browse view exists only to find birthdays quickly.
 
-### 4. Reliability / device QA pass
-- notification delivery on common Android vendors and battery-management modes;
-- animation performance on mid-range devices;
-- backup/export/import round-trip testing;
-- regression tests for date edge cases and notification scheduling.
+### 2. 0.5.0 — Android home-screen widget
+Add a useful glanceable surface outside the app:
+- next birthday or next few birthdays;
+- countdown in days;
+- birthday-today state;
+- tap opens the relevant profile/app;
+- update automatically when birthday data changes and as dates roll over;
+- preserve the BdaySquirrel pixel/Retrowave identity without making the widget noisy;
+- no network dependency.
 
-### 5. Release preparation
-- production signing/release pipeline;
-- privacy policy/store listing assets;
-- crash-free release checklist;
-- final onboarding and permission copy;
-- centralized entitlement layer for the six-month full-access period and annual subscription;
-- Google Play Billing subscription integration and restore/resubscribe flows.
+### 3. 0.5.x — Data / import polish
+Only add complexity where real data needs it:
+- search/filter inside very long contact-import previews;
+- stronger duplicate/conflict handling if ambiguous matches appear;
+- easier correction immediately after import;
+- graceful re-import when contacts have changed;
+- backup format/version compatibility checks before public release.
 
-## Monetization model — UPDATED
+### 4. 0.6.0 — Release reliability pass
+- notification delivery checks on common Android vendors and battery-management modes;
+- animation/performance pass on mid-range devices;
+- backup/export/import regression pass;
+- date, timezone, leap-day and notification scheduling regression suite;
+- production error/crash review;
+- accessibility and small-screen pass.
+
+### 5. 0.7.0 — Production release + monetization foundation
+- production signing and release pipeline;
+- Google Play package/release configuration;
+- privacy policy and store listing assets;
+- centralized entitlement layer for the six-month full-access period;
+- annual Google Play subscription product at the target price of $2.99/year;
+- purchase, restore, expired, cancelled and resubscribe flows;
+- clear pre-expiry reminders before the six-month period ends;
+- debug/test builds must never consume the production access period;
+- expiration must never delete local birthday data;
+- safe backup/export path remains available when subscription is inactive.
+
+## Monetization model
 BdaySquirrel does **not** have a Free tier vs Pro tier and does **not** hide individual features behind feature-level paywalls.
 
 The intended model is:
-1. A new production user receives the **complete application with all functionality unlocked for the first six calendar months**.
+1. A new production user receives the complete application with all functionality unlocked for the first **six calendar months**.
 2. The six-month period starts from the production entitlement/trial start, not from internal debug/test builds.
-3. During those six months there are no ads, no feature restrictions and no artificial limits on birthdays/reminders/import/backup.
+3. During those six months there are no ads, feature restrictions or artificial birthday/import/backup limits.
 4. After the six-month full-access period, continued normal use requires an **annual subscription**.
 5. Target subscription price: **$2.99 per year**, with Google Play handling localized storefront pricing where applicable.
-6. The subscription is managed through Google Play Billing and renews according to the user's Play subscription settings until cancelled.
-7. Subscription entitlement must be restored automatically after reinstall/device change when the same eligible Google Play account is used.
-8. Trial expiration or subscription expiration must never delete local birthday data. A user without an active entitlement should still be able to reach subscription/restore flows and a safe backup/export path.
-9. The app should warn clearly before the six-month period ends and before access changes, rather than surprise the user at the exact expiry moment.
+6. Subscription is managed through Google Play Billing and renews according to the user's Play subscription settings until cancelled.
+7. Entitlement should restore after reinstall/device change for the same eligible Google Play account.
+8. Trial or subscription expiration never deletes birthday data.
+9. Users should be warned clearly before access changes.
 
 ### Monetization architecture rule
 Do not build future features as `free` vs `pro` variants. Features are either part of BdaySquirrel or not.
 
-Before the public release, introduce a small centralized entitlement layer with states such as:
+Before public release, use one centralized entitlement source with states such as:
 - `FULL_TRIAL_ACTIVE`
 - `SUBSCRIPTION_REQUIRED`
 - `SUBSCRIPTION_ACTIVE`
 
-All screens should read one entitlement source instead of implementing billing checks individually. Google Play Billing integration should remain isolated from birthday/reminder/domain logic so billing state cannot corrupt or delete local birthday data.
-
-Debug/test builds must not start or consume the production six-month access period.
+Google Play Billing must remain isolated from birthday/reminder/domain logic so billing state cannot corrupt or delete local birthday data.
 
 ## Product direction
 - Android birthday reminder app.
-- Local-first and privacy-focused.
+- Local-first and privacy-focused internally, without overloading normal users with privacy copy in everyday UI.
 - No ads.
 - Complete functionality for the first six calendar months.
 - After that, annual subscription for continued normal use.
 - Target subscription price: $2.99/year.
 - No feature-split Free/Pro model.
-- Main promise: enter birthdays once and reliably receive reminders without needing to keep the app open.
+- Main promise: add birthdays once, find people quickly and reliably receive reminders without keeping the app open.
