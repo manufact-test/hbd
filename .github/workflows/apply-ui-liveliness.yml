@@ -6,6 +6,7 @@ on:
       - feat/android-mvp-scaffold
     paths:
       - dev-patches/apply_ui_liveliness.py
+      - dev-patches/trigger.txt
 
 permissions:
   contents: write
@@ -25,6 +26,7 @@ jobs:
       - name: Remove one-shot patch machinery
         run: |
           rm dev-patches/apply_ui_liveliness.py
+          rm dev-patches/trigger.txt
           rm .github/workflows/apply-ui-liveliness.yml
           rmdir dev-patches 2>/dev/null || true
 
