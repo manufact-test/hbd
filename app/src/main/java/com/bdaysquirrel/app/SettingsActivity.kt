@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Notifications
@@ -364,6 +365,35 @@ private fun SettingsScreen(
                             color = SettingsCoral,
                             fontSize = 13.sp,
                         )
+                    }
+                }
+            }
+
+            SettingsSectionLabel("КОНТАКТЫ")
+            SettingsPanel {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = "Быстро добавить даты",
+                        color = SettingsCream,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "BdaySquirrel найдёт дни рождения, уже сохранённые в системных контактах, и покажет список до импорта.",
+                        color = SettingsMuted,
+                        fontSize = 13.sp,
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    OutlinedButton(
+                        onClick = {
+                            context.startActivity(Intent(context, ContactsImportActivity::class.java))
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                    ) {
+                        Icon(Icons.Default.Contacts, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Импортировать из контактов")
                     }
                 }
             }

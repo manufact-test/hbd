@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -156,7 +157,14 @@ private val BdayTypography = Typography(
 )
 
 @Composable
-fun BdaySquirrelRoot(viewModel: BirthdayViewModel) {
+fun BdaySquirrelRoot(
+    viewModel: BirthdayViewModel,
+    startAddEditor: Boolean = false,
+    onImportContacts: () -> Unit = {},
+    showNotificationPrompt: Boolean = false,
+    onEnableNotifications: () -> Unit = {},
+    onDismissNotificationPrompt: () -> Unit = {},
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     MaterialTheme(
@@ -166,6 +174,11 @@ fun BdaySquirrelRoot(viewModel: BirthdayViewModel) {
     ) {
         BirthdayScreen(
             state = state,
+            startAddEditor = startAddEditor,
+            onImportContacts = onImportContacts,
+            showNotificationPrompt = showNotificationPrompt,
+            onEnableNotifications = onEnableNotifications,
+            onDismissNotificationPrompt = onDismissNotificationPrompt,
             onAddBirthday = viewModel::addBirthday,
             onUpdateBirthday = viewModel::updateBirthday,
             onDeleteBirthday = viewModel::deleteBirthday,
@@ -177,11 +190,16 @@ fun BdaySquirrelRoot(viewModel: BirthdayViewModel) {
 @Composable
 private fun BirthdayScreen(
     state: BirthdayUiState,
+    startAddEditor: Boolean,
+    onImportContacts: () -> Unit,
+    showNotificationPrompt: Boolean,
+    onEnableNotifications: () -> Unit,
+    onDismissNotificationPrompt: () -> Unit,
     onAddBirthday: (String, Int, Int, Int?, String, String?) -> Unit,
     onUpdateBirthday: (BirthdayEntity, String, Int, Int, Int?, String, String?) -> Unit,
     onDeleteBirthday: (BirthdayEntity) -> Unit,
 ) {
-    var showAddSheet by rememberSaveable { mutableStateOf(false) }
+    var showAddSheet by rememberSaveable { mutableStateOf(startAddEditor) }
     var editingBirthday by remember { mutableStateOf<BirthdayEntity?>(null) }
     var hasBirthdaySnapshot by rememberSaveable { mutableStateOf(false) }
     var knownBirthdayIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
@@ -251,13 +269,25 @@ private fun BirthdayScreen(
                 HeroPanel(totalBirthdays = state.birthdays.size)
             }
 
+            if (showNotificationPrompt) {
+                item {
+                    NotificationPermissionPanel(
+                        onEnable = onEnableNotifications,
+                        onDismiss = onDismissNotificationPrompt,
+                    )
+                }
+            }
+
             item {
                 SectionHeader()
             }
 
             if (state.birthdays.isEmpty()) {
                 item {
-                    EmptyBirthdays(onAddClick = { showAddSheet = true })
+                    EmptyBirthdays(
+                        onAddClick = { showAddSheet = true },
+                        onImportClick = onImportContacts,
+                    )
                 }
             } else {
                 items(
@@ -393,7 +423,10 @@ private fun SectionHeader() {
 }
 
 @Composable
-private fun EmptyBirthdays(onAddClick: () -> Unit) {
+private fun EmptyBirthdays(
+    onAddClick: () -> Unit,
+    onImportClick: () -> Unit,
+) {
     PixelPanel(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(22.dp),
@@ -406,13 +439,14 @@ private fun EmptyBirthdays(onAddClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Добавь первый день рождения — он сразу появится в списке ближайших событий.",
+                text = "Импортируй сохранённые дни рождения из контактов или добавь первую дату вручную.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MutedText,
             )
             Spacer(modifier = Modifier.height(18.dp))
             Button(
-                onClick = onAddClick,
+                onClick = onImportClick,
+                modifier = Modifier.fillMaxWidth(),
                 shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = SquirrelCoral,
@@ -420,12 +454,79 @@ private fun EmptyBirthdays(onAddClick: () -> Unit) {
                 ),
                 border = BorderStroke(2.dp, DarkOutline),
             ) {
+                Text("Импортировать из контактов")
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = onAddClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Добавить дату")
+                Text("Добавить вручную")
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotificationPermissionPanel(
+    onEnable: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    PixelPanel(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundBrush = Brush.horizontalGradient(
+            listOf(DeepIndigo, Color(0xFF34234C)),
+        ),
+        borderColor = Mint,
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = Mint,
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Разрешить напоминания?",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Cream,
+                    )
+                    Text(
+                        text = "Теперь в списке есть даты. Разрешение нужно только чтобы BdaySquirrel мог вовремя присылать уведомления.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MutedText,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Button(
+                    onClick = onEnable,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Mint,
+                        contentColor = DarkText,
+                    ),
+                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                ) {
+                    Text("Включить")
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Позже", color = MutedText)
+                }
             }
         }
     }
