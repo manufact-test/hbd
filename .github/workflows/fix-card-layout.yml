@@ -23,32 +23,10 @@ jobs:
           from pathlib import Path
           path = Path('app/src/main/java/com/bdaysquirrel/app/ui/BdaySquirrelApp.kt')
           text = path.read_text(encoding='utf-8')
-          old = '''                IconButton(onClick = onDelete) {
-                      Icon(
-                          imageVector = Icons.Default.Delete,
-                          contentDescription = "Удалить",
-                          tint = MutedText,
-                      )
-                  }
-              }
-          }
-
-          PixelBurstOverlay('''
-          new = '''                IconButton(onClick = onDelete) {
-                      Icon(
-                          imageVector = Icons.Default.Delete,
-                          contentDescription = "Удалить",
-                          tint = MutedText,
-                      )
-                  }
-              }
-          }
-          }
-
-          PixelBurstOverlay('''
-          if text.count(old) != 1:
-              raise SystemExit(f'Expected one birthday-card scope match, got {text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          marker = '\n        PixelBurstOverlay(\n'
+          if text.count(marker) != 1:
+              raise SystemExit(f'Expected one PixelBurstOverlay marker, got {text.count(marker)}')
+          path.write_text(text.replace(marker, '\n        }\n\n        PixelBurstOverlay(\n', 1), encoding='utf-8')
           PY
 
       - name: Remove one-shot workflow
