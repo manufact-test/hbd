@@ -81,36 +81,41 @@ Requirements:
 - privacy policy/store listing assets;
 - crash-free release checklist;
 - final onboarding and permission copy;
-- release-only entitlement clock foundation for the future paid-access model.
+- centralized entitlement layer for the six-month full-access period and annual subscription;
+- Google Play Billing subscription integration and restore/resubscribe flows.
 
 ## Monetization model — UPDATED
 BdaySquirrel does **not** have a Free tier vs Pro tier and does **not** hide individual features behind feature-level paywalls.
 
 The intended model is:
-1. A new production user receives the **complete application with all functionality unlocked for the first 365 days**.
-2. The 365-day period starts from the production entitlement/trial start, not from internal debug/test builds.
-3. During that year there are no ads, no feature restrictions and no artificial limits on birthdays/reminders/import/backup.
-4. After the first year, continued normal use requires payment for the application.
-5. The preferred payment is a **one-time non-consumable purchase**, not a recurring subscription.
-6. Google Play Billing must support purchase restoration after reinstall/device change when the same Play account is used.
-7. Expiration must never delete local birthday data. An expired user should still be able to reach purchase/restore flows and a safe backup/export path.
-8. The app should warn clearly before the free year ends rather than surprise the user at the exact expiry moment.
+1. A new production user receives the **complete application with all functionality unlocked for the first six calendar months**.
+2. The six-month period starts from the production entitlement/trial start, not from internal debug/test builds.
+3. During those six months there are no ads, no feature restrictions and no artificial limits on birthdays/reminders/import/backup.
+4. After the six-month full-access period, continued normal use requires an **annual subscription**.
+5. Target subscription price: **$2.99 per year**, with Google Play handling localized storefront pricing where applicable.
+6. The subscription is managed through Google Play Billing and renews according to the user's Play subscription settings until cancelled.
+7. Subscription entitlement must be restored automatically after reinstall/device change when the same eligible Google Play account is used.
+8. Trial expiration or subscription expiration must never delete local birthday data. A user without an active entitlement should still be able to reach subscription/restore flows and a safe backup/export path.
+9. The app should warn clearly before the six-month period ends and before access changes, rather than surprise the user at the exact expiry moment.
 
 ### Monetization architecture rule
 Do not build future features as `free` vs `pro` variants. Features are either part of BdaySquirrel or not.
 
 Before the public release, introduce a small centralized entitlement layer with states such as:
-- `FULL_YEAR_ACTIVE`
-- `PAYMENT_REQUIRED`
-- `PURCHASED`
+- `FULL_TRIAL_ACTIVE`
+- `SUBSCRIPTION_REQUIRED`
+- `SUBSCRIPTION_ACTIVE`
 
-All screens should read one entitlement source instead of implementing billing checks individually. Actual Google Play Billing integration can be completed closer to the production release, after the core birthday experience is stable.
+All screens should read one entitlement source instead of implementing billing checks individually. Google Play Billing integration should remain isolated from birthday/reminder/domain logic so billing state cannot corrupt or delete local birthday data.
+
+Debug/test builds must not start or consume the production six-month access period.
 
 ## Product direction
 - Android birthday reminder app.
 - Local-first and privacy-focused.
 - No ads.
-- Full functionality for the first year; paid continuation afterward.
+- Complete functionality for the first six calendar months.
+- After that, annual subscription for continued normal use.
+- Target subscription price: $2.99/year.
 - No feature-split Free/Pro model.
-- No recurring subscription planned; preferred unlock is a one-time purchase after the first year.
 - Main promise: enter birthdays once and reliably receive reminders without needing to keep the app open.
