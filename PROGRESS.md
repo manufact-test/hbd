@@ -5,8 +5,8 @@ Last updated: 2026-08-16
 ## Repository / branch
 - Repository: `manufact-test/hbd`
 - Active development branch: `feat/android-mvp-scaffold`
-- Current app version: `0.2.0`
-- Latest CI-verified visual package: `3eea49090f2482f63ad55328693ab4fa9a29220c`
+- Current app version: `0.3.0`
+- Latest CI-verified package before onboarding/import work: `3eea49090f2482f63ad55328693ab4fa9a29220c`
 
 ## Implemented
 - Main birthday list in the approved Retrowave / pixel BdaySquirrel visual style.
@@ -22,7 +22,6 @@ Last updated: 2026-08-16
 - A birthday happening today gets a distinct animated gradient, pulsing border and stronger visual emphasis.
 - Entrance effects distinguish genuinely new Room records from the initial database snapshot, so opening an existing list does not explode every card.
 - Settings screen.
-- Notification permission handling.
 - Birthday reminders with configurable time and offsets:
   - same day;
   - 1 day before;
@@ -30,58 +29,58 @@ Last updated: 2026-08-16
   - 7 days before.
 - Reminder rescheduling after birthday/settings changes, reboot, time change, timezone change and app update.
 - Real-device reminder delivery has been successfully verified by the project owner.
+- Notification permission is now requested contextually after birthday data exists instead of automatically on every fresh install.
 - Local ZIP backup/export and restore/import including birthday data, notes and available photos.
 - Android automatic cloud backup disabled to preserve the local-first model.
-- Unit tests for reminder date calculation, including leap day and year rollover.
 - GitHub Actions runs tests and builds the debug APK.
 
+## 0.3.0 onboarding / import package
+- Short branded first-run onboarding with animated squirrel.
+- Start choices:
+  - import birthdays from Android contacts;
+  - add the first birthday manually;
+  - restore an existing BdaySquirrel ZIP backup.
+- Onboarding is skippable and is not shown again after completion.
+- Existing installations with birthday data skip first-run onboarding automatically.
+- `READ_CONTACTS` is requested only after the user explicitly chooses contact import.
+- Contacts birthday reader supports birthdays with a known year and Android's yearless `--MM-dd` format, including February 29.
+- Contact import preview before database changes.
+- Multi-select plus `Select all` / `Clear all` controls.
+- Likely duplicates are detected by normalized name + day + month, marked in the preview and left unselected by default.
+- Imported contacts without a birth year stay yearless in BdaySquirrel.
+- Contact data is read locally and is never uploaded.
+- Empty / denied / retry states are handled in the import flow, including a shortcut to Android app settings.
+- Successful import returns directly to the populated BdaySquirrel experience instead of a separate completion page.
+- Empty main screen now offers both contact import and manual birthday creation.
+- Contact import can also be reopened later from Settings.
+- Added unit coverage for contact birthday date parsing.
+
 ## Current QA focus
-1. Verify the new day/month-only picker on a real device, including February 29.
-2. Verify the pixel burst and new-card pop do not affect card measurements or scrolling.
-3. Verify today's birthday card stays visually prominent without making text/buttons harder to read.
-4. Verify the animated background remains smooth on mid-range Android devices and does not distract from the list.
-5. Re-check backup/export/import round trips.
+1. First-run onboarding on a clean install.
+2. Upgrade behavior for an existing installation with stored birthdays.
+3. Contacts permission: allow, deny, retry and system-settings path.
+4. Contact import with known-year and yearless birthdays, including February 29.
+5. Duplicate marking and default selection behavior.
+6. Import of many contacts and transition back to the main birthday list.
+7. Manual-start and backup-restore onboarding paths.
+8. Contextual notification permission card after the first birthday exists.
+9. Existing animation, backup and reminder regressions.
 
 ## Roadmap — next work
 
-### 1. First-run onboarding + contacts birthday import — NEXT
-Build onboarding around the actual first user goal: get birthdays into BdaySquirrel quickly and enable reliable reminders.
+### 1. Real-device QA of 0.3.0 — NEXT
+Use the new package on actual Android devices and fix any provider/vendor-specific contact-format or permission behavior.
 
-Planned flow:
-1. Short branded welcome screen with the squirrel and the promise: birthdays stay on the device and BdaySquirrel reminds the user automatically.
-2. Choose how to start:
-   - `Import from contacts`;
-   - `Add manually`;
-   - `Restore backup` for an existing user.
-3. For contact import, request Contacts permission only after the user explicitly chooses import.
-4. Read contacts that contain birthday information and show a preview before changing the BdaySquirrel database.
-5. Let the user multi-select birthdays, including `Select all` / `Clear all`.
-6. Preserve birthdays without a known year.
-7. Detect likely duplicates against birthdays already stored in BdaySquirrel and clearly mark them before import.
-8. Show a compact import result summary and allow immediate editing of imported cards.
-9. Explain birthday notifications in-context and request notification permission only when it becomes relevant.
-10. Finish onboarding on the populated main screen rather than with a dead-end success page.
+### 2. Bulk-import polish
+- optional search/filter when the contact birthday list is long;
+- stronger duplicate/conflict controls if tester data reveals ambiguous matches;
+- easy edit immediately after an imported card needs correction;
+- refine copy and spacing from tester screenshots.
 
-Rules:
-- onboarding must be skippable;
-- manual birthday entry must always work without Contacts permission;
-- contacts and birthdays are never uploaded anywhere;
-- declining either Contacts or notification permission must not block the app;
-- onboarding is shown only for a genuine first run, with a Settings action available later for import/restore.
-
-### 2. Main-screen onboarding polish
-- useful empty state when there are no birthdays yet;
-- prominent `Import from contacts` and `Add birthday` actions in the empty state;
-- after import, naturally transition into the normal birthday list;
-- lightweight contextual hints instead of a long tutorial;
-- keep the Retrowave/pixel personality and mascot motion without slowing down setup.
-
-### 3. Bulk-import polish
-- clear import result summary;
-- duplicate/conflict handling;
-- easy edit after import;
-- graceful handling when Contacts contains no birthdays;
-- retry/open system settings path when Contacts permission is permanently denied.
+### 3. First-use polish
+- tune onboarding motion and pacing from real-device feedback;
+- refine empty-state presentation;
+- add only lightweight contextual hints where testers actually get stuck.
 
 ### 4. Reliability / device QA pass
 - notification delivery on common Android vendors and battery-management modes;
