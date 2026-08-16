@@ -1,6 +1,5 @@
 package com.bdaysquirrel.app.ui
 
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -8,6 +7,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +80,6 @@ import coil3.compose.AsyncImage
 import com.bdaysquirrel.app.data.BirthdayEntity
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.coroutines.delay
@@ -201,6 +200,7 @@ private fun BirthdayScreen(
 ) {
     var showAddSheet by rememberSaveable { mutableStateOf(startAddEditor) }
     var editingBirthday by remember { mutableStateOf<BirthdayEntity?>(null) }
+    var viewingBirthday by remember { mutableStateOf<BirthdayUiModel?>(null) }
     var hasBirthdaySnapshot by rememberSaveable { mutableStateOf(false) }
     var knownBirthdayIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var newlyAddedBirthdayId by remember { mutableStateOf<Long?>(null) }
@@ -297,6 +297,7 @@ private fun BirthdayScreen(
                     BirthdayCard(
                         model = birthday,
                         burstOnEnter = birthday.birthday.id == newlyAddedBirthdayId,
+                        onOpen = { viewingBirthday = birthday },
                         onEdit = { editingBirthday = birthday.birthday },
                         onDelete = { onDeleteBirthday(birthday.birthday) },
                     )
@@ -323,6 +324,17 @@ private fun BirthdayScreen(
             onSave = { name, day, month, year, note, photoUri ->
                 onUpdateBirthday(birthday, name, day, month, year, note, photoUri)
                 editingBirthday = null
+            },
+        )
+    }
+
+    viewingBirthday?.let { model ->
+        BirthdayDetailsSheet(
+            model = model,
+            onDismiss = { viewingBirthday = null },
+            onEdit = {
+                viewingBirthday = null
+                editingBirthday = model.birthday
             },
         )
     }
@@ -536,6 +548,7 @@ private fun NotificationPermissionPanel(
 private fun BirthdayCard(
     model: BirthdayUiModel,
     burstOnEnter: Boolean,
+    onOpen: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -551,6 +564,7 @@ private fun BirthdayCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onOpen)
             .graphicsLayer {
                 scaleX = visuals.scale
                 scaleY = visuals.scale
@@ -621,6 +635,15 @@ private fun BirthdayCard(
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = SoftCream,
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                val zodiac = zodiacInfo(model.birthday.day, model.birthday.month)
+                Text(
+                    text = "${zodiac.symbol} ${zodiac.name} • ${birthYearLabel(model.birthday.year)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Lavender,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
@@ -730,7 +753,7 @@ private fun BirthdayEditorSheet(
     var note by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.note.orEmpty()) }
     var photoUri by rememberSaveable(birthday?.id) { mutableStateOf(birthday?.photoUri) }
     var attemptedSubmit by rememberSaveable(birthday?.id) { mutableStateOf(false) }
-    var showYearlessPicker by rememberSaveable(birthday?.id) { mutableStateOf(false) }
+    var showBirthdayPicker by rememberSaveable(birthday?.id) { mutableStateOf(false) }
 
     val selectedDate = selectedDateEpochDay?.let(LocalDate::ofEpochDay)
     val isValid = name.isNotBlank() && selectedDate != null
@@ -842,31 +865,7 @@ private fun BirthdayEditorSheet(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = {
-                    if (yearUnknown) {
-                        showYearlessPicker = true
-                    } else {
-                        val pickerDate = selectedDate ?: today.minusYears(30)
-                        DatePickerDialog(
-                            context,
-                            { _, year, monthZeroBased, dayOfMonth ->
-                                selectedDateEpochDay = LocalDate.of(
-                                    year,
-                                    monthZeroBased + 1,
-                                    dayOfMonth,
-                                ).toEpochDay()
-                            },
-                            pickerDate.year,
-                            pickerDate.monthValue - 1,
-                            pickerDate.dayOfMonth,
-                        ).apply {
-                            datePicker.maxDate = today
-                                .atStartOfDay(ZoneId.systemDefault())
-                                .toInstant()
-                                .toEpochMilli()
-                        }.show()
-                    }
-                },
+                onClick = { showBirthdayPicker = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -895,7 +894,18 @@ private fun BirthdayEditorSheet(
             ) {
                 Checkbox(
                     checked = yearUnknown,
-                    onCheckedChange = { yearUnknown = it },
+                    onCheckedChange = { unknown ->
+                        if (yearUnknown && !unknown) {
+                            selectedDate?.let { date ->
+                                val targetYear = today.minusYears(30).year
+                                val yearMonth = YearMonth.of(targetYear, date.monthValue)
+                                selectedDateEpochDay = yearMonth
+                                    .atDay(date.dayOfMonth.coerceAtMost(yearMonth.lengthOfMonth()))
+                                    .toEpochDay()
+                            }
+                        }
+                        yearUnknown = unknown
+                    },
                 )
                 Text(
                     text = "Не указывать год рождения",
@@ -967,19 +977,27 @@ private fun BirthdayEditorSheet(
         }
     }
 
-    if (showYearlessPicker) {
-        val pickerDate = selectedDate ?: today
-        YearlessBirthdayPickerDialog(
+    if (showBirthdayPicker) {
+        val pickerDate = selectedDate ?: today.minusYears(30)
+        BirthdayDatePickerDialog(
             initialMonth = pickerDate.monthValue,
             initialDay = pickerDate.dayOfMonth,
+            initialYear = if (yearUnknown) null else pickerDate.year,
+            includeYear = !yearUnknown,
             locale = locale,
-            onDismiss = { showYearlessPicker = false },
-            onConfirm = { month, day ->
-                val anchorYear = selectedDate?.year ?: today.minusYears(30).year
-                val anchorMonth = YearMonth.of(anchorYear, month)
-                val storageYear = if (day <= anchorMonth.lengthOfMonth()) anchorYear else 2000
-                selectedDateEpochDay = LocalDate.of(storageYear, month, day).toEpochDay()
-                showYearlessPicker = false
+            today = today,
+            onDismiss = { showBirthdayPicker = false },
+            onConfirm = { year, month, day ->
+                if (yearUnknown) {
+                    val anchorYear = selectedDate?.year ?: today.minusYears(30).year
+                    val anchorMonth = YearMonth.of(anchorYear, month)
+                    val storageYear = if (day <= anchorMonth.lengthOfMonth()) anchorYear else 2000
+                    selectedDateEpochDay = LocalDate.of(storageYear, month, day).toEpochDay()
+                } else {
+                    val selectedYear = year ?: today.minusYears(30).year
+                    selectedDateEpochDay = LocalDate.of(selectedYear, month, day).toEpochDay()
+                }
+                showBirthdayPicker = false
             },
         )
     }

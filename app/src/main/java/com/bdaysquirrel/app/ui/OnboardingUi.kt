@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -207,28 +206,6 @@ private fun WelcomeStep(
             fontSize = 16.sp,
             lineHeight = 23.sp,
         )
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = CutCornerShape(topStart = 10.dp, bottomEnd = 10.dp),
-            color = OnboardingCardViolet,
-            border = BorderStroke(1.dp, OnboardingRaisedViolet),
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Default.Lock, contentDescription = null, tint = OnboardingMint)
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "Local-first: список дней рождения хранится на твоём устройстве.",
-                    color = OnboardingMuted,
-                    fontSize = 13.sp,
-                )
-            }
-        }
-
         Spacer(modifier = Modifier.height(26.dp))
         Button(
             onClick = onContinue,
@@ -286,7 +263,7 @@ private fun StartStep(
 
         StartActionCard(
             title = "Импортировать из контактов",
-            description = "Найдём контакты с датой рождения, покажем превью и отметим возможные дубли.",
+            description = "Найдём контакты с датой рождения, покажем список и отметим возможные дубли.",
             icon = { Icon(Icons.Default.Contacts, contentDescription = null, tint = OnboardingCoral) },
             primary = true,
             enabled = !backupBusy,
@@ -317,14 +294,6 @@ private fun StartStep(
                 fontSize = 13.sp,
             )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Доступ к контактам запрашивается только если ты выберешь импорт. Без него BdaySquirrel полностью работает с ручным вводом.",
-            color = OnboardingMuted,
-            fontSize = 12.sp,
-            lineHeight = 18.sp,
-        )
     }
 }
 
