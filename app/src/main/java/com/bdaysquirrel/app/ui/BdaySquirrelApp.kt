@@ -557,6 +557,8 @@ private fun BirthdayCard(
             }
         }
 
+        }
+
         PixelBurstOverlay(
             active = burstOnEnter,
             modifier = Modifier.fillMaxSize(),
