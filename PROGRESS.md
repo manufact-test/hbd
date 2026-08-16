@@ -6,7 +6,7 @@ Last updated: 2026-08-16
 - Repository: `manufact-test/hbd`
 - Active development branch: `feat/android-mvp-scaffold`
 - Current app version: `0.3.0`
-- Latest CI-verified package before onboarding/import work: `3eea49090f2482f63ad55328693ab4fa9a29220c`
+- Latest CI-verified package: `6e07c08f7ea9299a3714ecdd6a8bd886a8f953c1` — Android CI run #143 passed unit tests and debug APK assembly.
 
 ## Implemented
 - Main birthday list in the approved Retrowave / pixel BdaySquirrel visual style.
