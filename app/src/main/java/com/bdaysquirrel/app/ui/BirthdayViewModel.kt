@@ -24,6 +24,7 @@ data class BirthdayUiModel(
 data class BirthdayUiState(
     val birthdays: List<BirthdayUiModel> = emptyList(),
     val isLoaded: Boolean = false,
+    val searchQuery: String = "",
 )
 
 class BirthdayViewModel(
@@ -31,24 +32,41 @@ class BirthdayViewModel(
     private val clock: Clock = Clock.systemDefaultZone(),
 ) : ViewModel() {
 
-    val uiState: StateFlow<BirthdayUiState> = repository.birthdays
-        .map { birthdays ->
-            val today = LocalDate.now(clock)
-            BirthdayUiState(
-                birthdays = birthdays
-                    .map { it.toUiModel(today) }
-                    .sortedWith(
-                        compareBy<BirthdayUiModel> { it.daysUntil }
-                            .thenBy { it.birthday.name.lowercase() },
-                    ),
-                isLoaded = true,
+    private val searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
+
+    val uiState: StateFlow<BirthdayUiState> = kotlinx.coroutines.flow.combine(
+        repository.birthdays,
+        searchQuery,
+    ) { birthdays, query ->
+        val today = LocalDate.now(clock)
+        val normalizedQuery = query.trim().lowercase()
+
+        val models = birthdays
+            .map { it.toUiModel(today) }
+            .filter { model ->
+                normalizedQuery.isBlank() ||
+                    model.birthday.name.lowercase().contains(normalizedQuery) ||
+                    model.birthday.note.lowercase().contains(normalizedQuery)
+            }
+            .sortedWith(
+                compareBy<BirthdayUiModel> { it.daysUntil }
+                    .thenBy { it.birthday.name.lowercase() },
             )
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = BirthdayUiState(),
+
+        BirthdayUiState(
+            birthdays = models,
+            isLoaded = true,
+            searchQuery = query,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = BirthdayUiState(),
+    )
+
+    fun updateSearchQuery(query: String) {
+        searchQuery.value = query
+    }
 
     fun addBirthday(
         name: String,
@@ -59,14 +77,7 @@ class BirthdayViewModel(
         photoUri: String?,
     ) {
         viewModelScope.launch {
-            repository.add(
-                name = name,
-                day = day,
-                month = month,
-                year = year,
-                note = note,
-                photoUri = photoUri,
-            )
+            repository.add(name, day, month, year, note, photoUri)
         }
     }
 
@@ -80,15 +91,7 @@ class BirthdayViewModel(
         photoUri: String?,
     ) {
         viewModelScope.launch {
-            repository.update(
-                birthday = birthday,
-                name = name,
-                day = day,
-                month = month,
-                year = year,
-                note = note,
-                photoUri = photoUri,
-            )
+            repository.update(birthday, name, day, month, year, note, photoUri)
         }
     }
 
