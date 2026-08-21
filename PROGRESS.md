@@ -1,11 +1,11 @@
 # BdaySquirrel — current progress
 
-Last updated: 2026-08-16
+Last updated: 2026-08-21
 
 ## Repository / branch
 - Repository: `manufact-test/hbd`
 - Active development branch: `feat/android-mvp-scaffold`
-- Current app version: `0.3.1`
+- Current app version: `0.4.0`
 - Latest CI-verified package: `ba72d3fc780c2c68629a5125e805d3ef6d7766f9` — Android CI run #160 passed unit tests, debug APK assembly and artifact upload.
 - `0.3.1` has been verified by the project owner on a real Android device, including the adaptive birthday picker and read-only birthday profile.
 
@@ -62,8 +62,19 @@ Last updated: 2026-08-16
 - Contact import can be reopened later from Settings.
 - Contact birthday parsing has unit coverage.
 
+## Find & Calendar — 0.4.0
+- Fast in-memory search across person names and saved notes.
+- Multi-word search is case-insensitive and keeps the complete collection untouched.
+- The nearest-birthday list remains the default view.
+- A clear `По месяцам` switch opens birthday-only month browsing.
+- Month chips show birthday counts and support a quick jump to any populated month or all months.
+- Opening the month view jumps to the current populated month or the next relevant one, wrapping to the start of the year when needed.
+- Month sections keep existing birthday cards, tap-to-open profiles, edit/delete actions and visual effects.
+- Search and month empty states provide direct recovery actions.
+- Search, grouping, sorting, counts and relevant-month selection have unit coverage.
+
 ## Current QA status
-The 0.3.1 interaction package is accepted on the primary real device. QA is no longer blocking the next functional milestone.
+The 0.3.1 interaction package is accepted on the primary real device. Version 0.4.0 is implemented and awaits real-device UX verification.
 
 Keep regression coverage for:
 1. reminders and rescheduling;
@@ -75,24 +86,7 @@ Keep regression coverage for:
 
 ## Roadmap — next work
 
-### 1. 0.4.0 — Find & Calendar — NEXT
-The next package should make a large birthday collection easy to navigate after contact import.
-
-Planned functionality:
-- add fast search by person name;
-- include saved notes in search where useful;
-- keep the current nearest-birthday list as the default view;
-- add a clear `По месяцам` view for browsing birthdays by month;
-- show month sections / month selector with birthday counts;
-- jump quickly to the current or next relevant month;
-- preserve the same birthday cards and tap-to-open profile behavior in both views;
-- empty search/month states should be useful rather than blank;
-- search/filter state must not change reminder scheduling or birthday data;
-- keep scrolling and filtering smooth with hundreds of imported birthdays.
-
-Design rule: do not turn BdaySquirrel into a generic calendar. The calendar/browse view exists only to find birthdays quickly.
-
-### 2. 0.5.0 — Android home-screen widget
+### 1. 0.5.0 — Android home-screen widget — NEXT
 Add a useful glanceable surface outside the app:
 - next birthday or next few birthdays;
 - countdown in days;
@@ -102,7 +96,7 @@ Add a useful glanceable surface outside the app:
 - preserve the BdaySquirrel pixel/Retrowave identity without making the widget noisy;
 - no network dependency.
 
-### 3. 0.5.x — Data / import polish
+### 2. 0.5.x — Data / import polish
 Only add complexity where real data needs it:
 - search/filter inside very long contact-import previews;
 - stronger duplicate/conflict handling if ambiguous matches appear;
@@ -110,7 +104,7 @@ Only add complexity where real data needs it:
 - graceful re-import when contacts have changed;
 - backup format/version compatibility checks before public release.
 
-### 4. 0.6.0 — Release reliability pass
+### 3. 0.6.0 — Release reliability pass
 - notification delivery checks on common Android vendors and battery-management modes;
 - animation/performance pass on mid-range devices;
 - backup/export/import regression pass;
@@ -118,7 +112,7 @@ Only add complexity where real data needs it:
 - production error/crash review;
 - accessibility and small-screen pass.
 
-### 5. 0.7.0 — Production release + monetization foundation
+### 4. 0.7.0 — Production release + monetization foundation
 - production signing and release pipeline;
 - Google Play package/release configuration;
 - privacy policy and store listing assets;

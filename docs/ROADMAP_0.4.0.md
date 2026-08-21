@@ -3,15 +3,18 @@
 ## Goal
 Make large birthday collections easy to navigate without turning BdaySquirrel into a generic calendar.
 
+Status: implemented in version 0.4.0.
+
 ## Scope
 
-- Fast search by person name.
-- Search through notes where useful.
-- Birthday browsing by month.
-- Month sections with birthday counts.
-- Preserve existing cards and profile navigation.
-- Keep reminder scheduling and local data unchanged.
-- Add regression coverage for search and navigation flows.
+- Fast search by person name and saved notes, with multi-word matching.
+- Nearest-birthday view remains the default.
+- Dedicated month browsing with month counts and a quick selector.
+- Initial month jump targets the current or next populated month.
+- Existing cards, animations, edit actions and profile navigation are reused in both views.
+- Search and browse state are isolated from birthday data and reminder scheduling.
+- Useful empty results provide a direct reset action.
+- Unit coverage protects search, counts, sorting and relevant-month selection.
 
 ## Design principles
 

@@ -19,7 +19,7 @@ The core experience is working and real-device verified:
 - local ZIP backup / restore;
 - animated Retrowave UI.
 
-The next product milestone is **0.4.0 — Find & Calendar**: fast search plus a birthday-only month browsing view for users with larger imported collections.
+Version **0.4.0 — Find & Calendar** adds fast name/note search plus a birthday-only month browsing view for larger imported collections. The next product milestone is the Android home-screen widget.
 
 After that the planned sequence is:
 1. Android home-screen birthday widget;

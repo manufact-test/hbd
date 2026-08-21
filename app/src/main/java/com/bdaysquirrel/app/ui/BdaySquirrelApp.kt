@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
@@ -31,8 +32,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -67,6 +71,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -79,8 +84,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.bdaysquirrel.app.data.BirthdayEntity
 import java.time.LocalDate
+import java.time.Month
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
 import kotlinx.coroutines.delay
 
@@ -178,6 +185,10 @@ fun BdaySquirrelRoot(
             showNotificationPrompt = showNotificationPrompt,
             onEnableNotifications = onEnableNotifications,
             onDismissNotificationPrompt = onDismissNotificationPrompt,
+            onSearchQueryChange = viewModel::updateSearchQuery,
+            onShowUpcoming = viewModel::showUpcoming,
+            onShowMonths = viewModel::showMonths,
+            onSelectMonth = viewModel::selectMonth,
             onAddBirthday = viewModel::addBirthday,
             onUpdateBirthday = viewModel::updateBirthday,
             onDeleteBirthday = viewModel::deleteBirthday,
@@ -194,6 +205,10 @@ private fun BirthdayScreen(
     showNotificationPrompt: Boolean,
     onEnableNotifications: () -> Unit,
     onDismissNotificationPrompt: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onShowUpcoming: () -> Unit,
+    onShowMonths: () -> Unit,
+    onSelectMonth: (Int?) -> Unit,
     onAddBirthday: (String, Int, Int, Int?, String, String?) -> Unit,
     onUpdateBirthday: (BirthdayEntity, String, Int, Int, Int?, String, String?) -> Unit,
     onDeleteBirthday: (BirthdayEntity) -> Unit,
@@ -236,7 +251,7 @@ private fun BirthdayScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
-        topBar = { AppHeader() },
+        topBar = { AppHeader(state.browseMode) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showAddSheet = true },
@@ -279,7 +294,13 @@ private fun BirthdayScreen(
             }
 
             item {
-                SectionHeader()
+                FindAndBrowsePanel(
+                    query = state.searchQuery,
+                    mode = state.browseMode,
+                    onQueryChange = onSearchQueryChange,
+                    onShowUpcoming = onShowUpcoming,
+                    onShowMonths = onShowMonths,
+                )
             }
 
             if (state.birthdays.isEmpty()) {
@@ -289,9 +310,19 @@ private fun BirthdayScreen(
                         onImportClick = onImportContacts,
                     )
                 }
-            } else {
+            } else if (state.matchedBirthdays.isEmpty()) {
+                item {
+                    EmptySearchResults(
+                        query = state.searchQuery,
+                        onClearSearch = { onSearchQueryChange("") },
+                    )
+                }
+            } else if (state.browseMode == BirthdayBrowseMode.UPCOMING) {
+                item {
+                    SectionHeader("БЛИЖАЙШИЕ")
+                }
                 items(
-                    items = state.birthdays,
+                    items = state.matchedBirthdays,
                     key = { it.birthday.id },
                 ) { birthday ->
                     BirthdayCard(
@@ -301,6 +332,49 @@ private fun BirthdayScreen(
                         onEdit = { editingBirthday = birthday.birthday },
                         onDelete = { onDeleteBirthday(birthday.birthday) },
                     )
+                }
+            } else {
+                item {
+                    MonthSelector(
+                        summaries = state.monthSummaries,
+                        selectedMonth = state.selectedMonth,
+                        onSelectMonth = onSelectMonth,
+                    )
+                }
+
+                val visibleSections = state.monthSections.filter { section ->
+                    state.selectedMonth == null || section.month == state.selectedMonth
+                }
+                if (visibleSections.isEmpty()) {
+                    item {
+                        EmptyMonthResults(
+                            selectedMonth = state.selectedMonth,
+                            query = state.searchQuery,
+                            onShowAllMonths = { onSelectMonth(null) },
+                            onClearSearch = { onSearchQueryChange("") },
+                        )
+                    }
+                } else {
+                    visibleSections.forEach { section ->
+                        item(key = "month-header-${section.month}") {
+                            MonthSectionHeader(
+                                month = section.month,
+                                count = section.birthdays.size,
+                            )
+                        }
+                        items(
+                            items = section.birthdays,
+                            key = { "month-${section.month}-${it.birthday.id}" },
+                        ) { birthday ->
+                            BirthdayCard(
+                                model = birthday,
+                                burstOnEnter = birthday.birthday.id == newlyAddedBirthdayId,
+                                onOpen = { viewingBirthday = birthday },
+                                onEdit = { editingBirthday = birthday.birthday },
+                                onDelete = { onDeleteBirthday(birthday.birthday) },
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -341,7 +415,7 @@ private fun BirthdayScreen(
 }
 
 @Composable
-private fun AppHeader() {
+private fun AppHeader(mode: BirthdayBrowseMode) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,7 +430,11 @@ private fun AppHeader() {
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Ближайшие дни рождения",
+            text = if (mode == BirthdayBrowseMode.UPCOMING) {
+                "Ближайшие дни рождения"
+            } else {
+                "Дни рождения по месяцам"
+            },
             style = MaterialTheme.typography.headlineMedium,
             color = Cream,
         )
@@ -415,13 +493,116 @@ private fun HeroPanel(totalBirthdays: Int) {
 }
 
 @Composable
-private fun SectionHeader() {
+private fun FindAndBrowsePanel(
+    query: String,
+    mode: BirthdayBrowseMode,
+    onQueryChange: (String) -> Unit,
+    onShowUpcoming: () -> Unit,
+    onShowMonths: () -> Unit,
+) {
+    PixelPanel(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundBrush = Brush.horizontalGradient(listOf(DeepIndigo, CardViolet)),
+        borderColor = Lavender,
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Поиск по имени и заметкам") },
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = Mint,
+                    )
+                },
+                trailingIcon = if (query.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Очистить поиск",
+                                tint = MutedText,
+                            )
+                        }
+                    }
+                } else {
+                    null
+                },
+                shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                BrowseModeButton(
+                    text = "Ближайшие",
+                    icon = Icons.Default.ViewAgenda,
+                    selected = mode == BirthdayBrowseMode.UPCOMING,
+                    onClick = onShowUpcoming,
+                    modifier = Modifier.weight(1f),
+                )
+                BrowseModeButton(
+                    text = "По месяцам",
+                    icon = Icons.Default.CalendarMonth,
+                    selected = mode == BirthdayBrowseMode.MONTHS,
+                    onClick = onShowMonths,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BrowseModeButton(
+    text: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = CutCornerShape(topStart = 7.dp, bottomEnd = 7.dp)
+    Row(
+        modifier = modifier
+            .clip(shape)
+            .background(if (selected) SquirrelCoral else RaisedViolet)
+            .border(2.dp, if (selected) Peach else DarkOutline, shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = if (selected) DarkText else Cream,
+        )
+        Spacer(modifier = Modifier.width(7.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (selected) DarkText else Cream,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun SectionHeader(title: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "ПО КАЛЕНДАРЮ",
+            text = title,
             style = MaterialTheme.typography.labelLarge,
             color = Mint,
             letterSpacing = 1.2.sp,
@@ -431,6 +612,151 @@ private fun SectionHeader() {
             modifier = Modifier.weight(1f),
             color = RaisedViolet,
         )
+    }
+}
+
+@Composable
+private fun MonthSelector(
+    summaries: List<BirthdayMonthSummary>,
+    selectedMonth: Int?,
+    onSelectMonth: (Int?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SectionHeader("БЫСТРЫЙ ПЕРЕХОД")
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item(key = "all-months") {
+                MonthChip(
+                    label = "Все · ${summaries.sumOf { it.count }}",
+                    selected = selectedMonth == null,
+                    onClick = { onSelectMonth(null) },
+                )
+            }
+            items(
+                items = summaries,
+                key = { it.month },
+            ) { summary ->
+                MonthChip(
+                    label = "${monthShortName(summary.month)} · ${summary.count}",
+                    selected = selectedMonth == summary.month,
+                    onClick = { onSelectMonth(summary.month) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val shape = CutCornerShape(topStart = 6.dp, bottomEnd = 6.dp)
+    Surface(
+        modifier = Modifier
+            .clip(shape)
+            .clickable(onClick = onClick),
+        shape = shape,
+        color = if (selected) Mint else CardViolet,
+        contentColor = if (selected) DarkText else SoftCream,
+        border = BorderStroke(2.dp, if (selected) Cream else RaisedViolet),
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 13.dp, vertical = 9.dp),
+            style = MaterialTheme.typography.labelLarge,
+        )
+    }
+}
+
+@Composable
+private fun MonthSectionHeader(month: Int, count: Int) {
+    PixelPanel(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundBrush = Brush.horizontalGradient(listOf(RaisedViolet, DeepIndigo)),
+        borderColor = SquirrelCoral,
+        shadowColor = Color(0xFF33162E),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = monthFullName(month).uppercase(Locale.getDefault()),
+                style = MaterialTheme.typography.titleMedium,
+                color = Peach,
+                letterSpacing = 1.1.sp,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = birthdayCountLabel(count),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Mint,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptySearchResults(
+    query: String,
+    onClearSearch: () -> Unit,
+) {
+    EmptyBrowsePanel(
+        title = "Никого не нашли",
+        message = "По запросу «${query.trim()}» нет совпадений в именах или заметках.",
+        action = "Очистить поиск",
+        onAction = onClearSearch,
+    )
+}
+
+@Composable
+private fun EmptyMonthResults(
+    selectedMonth: Int?,
+    query: String,
+    onShowAllMonths: () -> Unit,
+    onClearSearch: () -> Unit,
+) {
+    val hasQuery = query.isNotBlank()
+    val monthLabel = selectedMonth?.let(::monthFullName) ?: "всех месяцев"
+    EmptyBrowsePanel(
+        title = "В этом месяце тихо",
+        message = if (hasQuery) {
+            "Для месяца «$monthLabel» нет совпадений по запросу «${query.trim()}»."
+        } else {
+            "Для месяца «$monthLabel» пока нет сохранённых дней рождения."
+        },
+        action = if (hasQuery) "Очистить поиск" else "Показать все месяцы",
+        onAction = if (hasQuery) onClearSearch else onShowAllMonths,
+    )
+}
+
+@Composable
+private fun EmptyBrowsePanel(
+    title: String,
+    message: String,
+    action: String,
+    onAction: () -> Unit,
+) {
+    PixelPanel(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundBrush = Brush.horizontalGradient(listOf(CardViolet, DeepIndigo)),
+        borderColor = Lavender,
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge, color = Cream)
+            Spacer(modifier = Modifier.height(7.dp))
+            Text(message, style = MaterialTheme.typography.bodyLarge, color = MutedText)
+            Spacer(modifier = Modifier.height(14.dp))
+            OutlinedButton(
+                onClick = onAction,
+                shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+            ) {
+                Text(action)
+            }
+        }
     }
 }
 
@@ -1038,3 +1364,16 @@ private fun birthdayCountLabel(count: Int): String {
     }
     return "$count $noun"
 }
+
+private fun monthFullName(month: Int): String = Month.of(month)
+    .getDisplayName(JavaTextStyle.FULL_STANDALONE, Locale.getDefault())
+    .replaceFirstChar { character ->
+        if (character.isLowerCase()) character.titlecase(Locale.getDefault()) else character.toString()
+    }
+
+private fun monthShortName(month: Int): String = Month.of(month)
+    .getDisplayName(JavaTextStyle.SHORT_STANDALONE, Locale.getDefault())
+    .trimEnd('.')
+    .replaceFirstChar { character ->
+        if (character.isLowerCase()) character.titlecase(Locale.getDefault()) else character.toString()
+    }
