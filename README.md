@@ -4,7 +4,7 @@ BdaySquirrel is an Android birthday reminder app with a friendly pixel-art Retro
 
 ## Current milestone
 
-Current app version: **0.3.1**.
+Current app version: **0.5.0**.
 
 The core experience is working and real-device verified:
 - local birthday database;
@@ -17,9 +17,19 @@ The core experience is working and real-device verified:
 - contacts birthday import with preview, multi-select and duplicate detection;
 - first-run onboarding;
 - local ZIP backup / restore;
-- animated Retrowave UI.
+- animated Retrowave UI;
+- fast search by name and notes;
+- birthday browsing by calendar month.
 
-Version **0.4.0 — Find & Calendar** adds fast name/note search plus a birthday-only month browsing view for larger imported collections. The next product milestone is the Android home-screen widget.
+Version **0.5.0 — Birthday Greetings** adds offline greeting suggestions inside the person profile:
+- no AI, network API or server dependency;
+- deterministic local generation from the saved name, birthday-derived zodiac sign and optional upcoming age;
+- three tones: short, warm and light humor;
+- multiple repeatable variants per person and tone;
+- one-tap copy to the Android clipboard;
+- no Room schema or backup-format changes.
+
+The next product milestone is the Android home-screen birthday widget.
 
 After that the planned sequence is:
 1. Android home-screen birthday widget;

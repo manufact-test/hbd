@@ -1,8 +1,13 @@
 package com.bdaysquirrel.app.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,28 +24,40 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.bdaysquirrel.app.greetings.GreetingContext
+import com.bdaysquirrel.app.greetings.GreetingSuggestionEngine
+import com.bdaysquirrel.app.greetings.GreetingTone
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -73,6 +90,30 @@ internal fun BirthdayDetailsSheet(
                 .atDay(birthday.day.coerceAtMost(java.time.YearMonth.of(year, birthday.month).lengthOfMonth())),
         )
     }.getOrElse { "${birthday.day}.${birthday.month}" }
+    val context = LocalContext.current
+    var greetingTone by remember(birthday.id) { mutableStateOf(GreetingTone.WARM) }
+    var greetingVariant by remember(birthday.id) { mutableIntStateOf(0) }
+    val greeting = remember(
+        birthday.id,
+        birthday.name,
+        zodiac.name,
+        model.ageOnBirthday,
+        model.nextDate.year,
+        greetingTone,
+        greetingVariant,
+    ) {
+        GreetingSuggestionEngine.generate(
+            context = GreetingContext(
+                birthdayId = birthday.id,
+                name = birthday.name,
+                zodiacName = zodiac.name,
+                ageOnBirthday = model.ageOnBirthday,
+                celebrationYear = model.nextDate.year,
+            ),
+            tone = greetingTone,
+            variantIndex = greetingVariant,
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -200,6 +241,85 @@ internal fun BirthdayDetailsSheet(
                 }
             }
 
+            Spacer(modifier = Modifier.height(14.dp))
+            DetailInfoPanel {
+                Text(
+                    text = "ИДЕЯ ДЛЯ ПОЗДРАВЛЕНИЯ",
+                    color = DetailMint,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = "Выбери настроение — белочка подкинет вариант.",
+                    color = DetailMuted,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                GreetingToneSelector(
+                    selected = greetingTone,
+                    onSelected = { tone ->
+                        greetingTone = tone
+                        greetingVariant = 0
+                    },
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                    color = DetailDeepIndigo,
+                    border = BorderStroke(1.dp, DetailRaisedViolet),
+                ) {
+                    Text(
+                        text = greeting.text,
+                        modifier = Modifier.padding(14.dp),
+                        color = DetailSoftCream,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = { greetingVariant += 1 },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.size(6.dp))
+                    Text("Ещё вариант")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        copyGreeting(
+                            context = context,
+                            text = greeting.text,
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DetailMint,
+                        contentColor = DetailDarkText,
+                    ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.size(6.dp))
+                    Text("Скопировать", fontWeight = FontWeight.Bold)
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = onEdit,
@@ -221,6 +341,43 @@ internal fun BirthdayDetailsSheet(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             ) {
                 Text("Закрыть", color = DetailMuted)
+            }
+        }
+    }
+}
+
+@Composable
+private fun GreetingToneSelector(
+    selected: GreetingTone,
+    onSelected: (GreetingTone) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        GreetingTone.entries.forEach { tone ->
+            val isSelected = tone == selected
+            val shape = CutCornerShape(topStart = 6.dp, bottomEnd = 6.dp)
+            Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(shape)
+                    .clickable { onSelected(tone) },
+                shape = shape,
+                color = if (isSelected) DetailCoral else DetailRaisedViolet,
+                contentColor = if (isSelected) DetailDarkText else DetailSoftCream,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (isSelected) DetailCream else DetailLavender.copy(alpha = 0.45f),
+                ),
+            ) {
+                Text(
+                    text = tone.label,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 9.dp),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                )
             }
         }
     }
@@ -273,6 +430,24 @@ private fun DetailDivider() {
             .background(DetailRaisedViolet),
     )
     Spacer(modifier = Modifier.height(12.dp))
+}
+
+private fun copyGreeting(
+    context: Context,
+    text: String,
+) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(
+        ClipData.newPlainText(
+            "Поздравление BdaySquirrel",
+            text,
+        ),
+    )
+    Toast.makeText(
+        context,
+        "Поздравление скопировано",
+        Toast.LENGTH_SHORT,
+    ).show()
 }
 
 private fun detailCountdownLabel(days: Long): String = when (days) {
